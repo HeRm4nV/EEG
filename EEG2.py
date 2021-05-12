@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-# coding=Latin-1
+# coding=utf-8
 # Copyright (c) 2020, Alvaro Rivera-Rei, rivera.rei@gmail.com
 
 #1980x1090
@@ -15,7 +15,7 @@ from time import gmtime, strftime
 from copy import deepcopy
 
 ## Configurations:
-FullScreenShow = True # Pantalla completa automáticamente al iniciar el experimento
+FullScreenShow = True # Pantalla completa automï¿½ticamente al iniciar el experimento
 keys = [pygame.K_SPACE] # Teclas elegidas para mano derecha o izquierda
 
 fix_time   = 1000 # duracion cruz de fijacion
@@ -31,17 +31,17 @@ religion_words  = []
 magic_words     = []
 secular_words   = []
 
-with open('media/words.csv', 'rb') as csvfile:
+with open('media/words.csv', 'r') as csvfile:
     reader = csv.DictReader(csvfile)
     line_counter = 0
     for row in reader:
         line_counter += 1
         if row['religion'] != '':
-            religion_words.append(row['religion'])
+            religion_words.append(row['religion'].decode('utf-8'))
         if row['magic'] != '':
-            magic_words.append(row['magic'])
+            magic_words.append(row['magic'].decode('utf-8'))
         if row['secular'] != '':
-            secular_words.append(row['secular'])
+            secular_words.append(row['secular'].decode('utf-8'))
 
 # This return the names dictionary from pygame
 f=open("media/pygame_local_data.txt", "r")
@@ -56,33 +56,33 @@ for row in fl:
 ## Onscreen instructions
 slides = {
     'welcome1': [
-        "Bienvenido, gracias por tu participación.",
+        u"Bienvenido, gracias por tu participaciÃ³n.",
         " ",
         " ",
-        "Para continuar presione la barra espaciadora."
+        u"Para continuar presione la barra espaciadora."
         ],
     'welcome2': [
-        "Instrucciones:",
+        u"Instrucciones:",
         " ",
-        "A continuación, verás en pantalla palabras que aparecen por un breve periodo de tiempo.",
-        "Después que la palabra desaparezca, quedará una cruz en el centro de la pantalla",
-        "mientras esté presente, tendrás que pensar en conceptos relacionados con la palabra que acabas de ver.",
-        "Finalmente, cuando te indiquemos, tendrás que verbalizar (decir) las palabras que acabas de pensar.",
+        u"A continuaciÃ³n, verÃ¡s en pantalla palabras que aparecen por un breve periodo de tiempo.",
+        u"DespuÃ©s que la palabra desaparezca, quedarÃ¡ una cruz en el centro de la pantalla",
+        u"mientras estÃ© presente, tendrÃ¡s que pensar en conceptos relacionados con la palabra que acabas de ver.",
+        u"Finalmente, cuando te indiquemos, tendrÃ¡s que verbalizar (decir) las palabras que acabas de pensar.",
         " ",
-        "Primero haremos un ensayo.",
-        "Cuando esté listo presione la barra espaciadora.",
+        u"Primero haremos un ensayo.",
+        u"Cuando estÃ©s listo presione la barra espaciadora.",
         " "
         ],
     'wait': [
         "+"
         ],
     'spell': [
-        "En voz alta, diga todas las palabras que acaba de pensar."
+        u"En voz alta, diga todas las palabras que acaba de pensar."
     ],
     'farewell': [
-        "El Experimento ha terminado.",
+        u"El Experimento ha terminado.",
         "",
-        "Muchas gracias por su colaboración!!"
+        u"Muchas gracias por su colaboraciÃ³n!!"
         ]
     }
 
@@ -365,7 +365,7 @@ def main():
             #    actual_list = (actual_list + 2) % 3
             if not words[actual_list]:
                 actual_list += 1
-            intermission_text = ["Fin del bloque número " + str(actual_block),""]
+            intermission_text = ["Fin del bloque nï¿½mero " + str(actual_block),""]
             slide(intermission_text, True , K_SPACE)
             actual_block += 1
 
