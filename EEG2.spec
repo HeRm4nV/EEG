@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['EEG2.py'],
-             pathex=['C:\\Users\\HeRm4nV\\Documents\\Trabajo\\EEG'],
+             pathex=['/mnt/c/Users/HeRm4nV/Documents/Trabajo/EEG'],
              binaries=[],
              datas=[],
              hiddenimports=[],
