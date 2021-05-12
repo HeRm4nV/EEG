@@ -1,4 +1,4 @@
-# Tutorial para uso de lexical_decision
+# Tutorial para uso de EEG
 
 ## Instalación de paquetes y librerías
 
