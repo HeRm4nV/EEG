@@ -300,6 +300,8 @@ def show_word(word, subj_name, dfile, block_number):
     pygame.display.update(fixbox)
     pygame.time.delay(5000)
 
+    pygame.event.clear()                    # CLEAR EVENTS
+    
     r_time = slide(slides['spell'], True, K_RETURN)
 
     pygame.event.clear()                    # CLEAR EVENTS
