@@ -99,7 +99,7 @@ def setfonts():
 def init():
     """Init display and others"""
     setfonts()
-    global screen, resolution, center, background, char_color, charnext_color, fix, fixbox, izq, der, quest, questbox
+    global screen, resolution, center, background, char_color, charnext_color, fix, fixbox, fix_think, fixbox_think, izq, der, quest, questbox
     pygame.init() # soluciona el error de inicializacion de pygame.time
     pygame.display.init()
     #iconpath = join('media', 'spiderman.png')
@@ -124,6 +124,8 @@ def init():
     charnext_color = Color('lightgray')
     fix            = bigchar.render('+', True, char_color)
     fixbox         = fix.get_rect(centerx = center[0], centery = center[1])
+    fix_think      = bigchar.render('+', True, 'red')
+    fixbox_think   = fix.get_rect(centerx = center[0], centery = center[1])
     quest          = bigchar.render('?', True, char_color)
     questbox       = quest.get_rect(centerx = center[0], centery = center[1])
     screen.fill(background)
@@ -296,18 +298,18 @@ def show_word(word, subj_name, dfile, block_number):
     #slide(slides['wait'], False, K_SPACE, limit_time = 5000)
     screen.fill(background)
     pygame.display.flip()
-    screen.blit(fix, fixbox)
-    pygame.display.update(fixbox)
+    screen.blit(fix_think, fixbox_think)
+    pygame.display.update(fixbox_think)
     pygame.time.delay(5000)
 
     pygame.event.clear()                    # CLEAR EVENTS
-    
+
     r_time = slide(slides['spell'], True, K_RETURN)
 
     pygame.event.clear()                    # CLEAR EVENTS
 
     if dfile != None:
-        dfile.write("%s,%s,%s,%s,%s\n" % (subj_name, block_number, word, str(r_time), ""))
+        dfile.write("%s,%s,%s,%s,%s\n" % (subj_name, block_number, word.encode('utf-8'), str(r_time), ""))
 
 def ends():
     """Closes the show"""
