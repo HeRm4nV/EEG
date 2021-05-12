@@ -124,7 +124,7 @@ def init():
     charnext_color = Color('lightgray')
     fix            = bigchar.render('+', True, char_color)
     fixbox         = fix.get_rect(centerx = center[0], centery = center[1])
-    fix_think      = bigchar.render('+', True, 'red')
+    fix_think      = bigchar.render('+', True, Color('red'))
     fixbox_think   = fix.get_rect(centerx = center[0], centery = center[1])
     quest          = bigchar.render('?', True, char_color)
     questbox       = quest.get_rect(centerx = center[0], centery = center[1])
@@ -369,7 +369,8 @@ def main():
             #    actual_list = (actual_list + 2) % 3
             if not words[actual_list]:
                 actual_list += 1
-            intermission_text = ["Fin del bloque n�mero " + str(actual_block),""]
+            block_text = "Fin del bloque número " + str(actual_block)
+            intermission_text = [block_text.decode('utf-8'), ""]
             slide(intermission_text, True , K_SPACE)
             actual_block += 1
 
