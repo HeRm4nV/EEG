@@ -223,17 +223,21 @@ def pygame_exit():
     pygame.quit()
     sys.exit()
 
-def paragraph(text, just_info, key):
+def paragraph(text, just_info, key, rise = 0, color = None):
     """Organizes a text into a paragraph"""
     screen.fill(background)
     row = center[1] - 20 * len(text)
+
+    if color == None:
+        color = char_color
+    
     for line in text:
         #try:
         #    phrase    = char.render(line, True, char_color)
         #    phrasebox = pygame.Rect((resolution[0]/8, 0 + row, resolution[0]*6/8, resolution[1]*5/8))
         #except:
-        phrasebox = pygame.Rect((resolution[0]/8, 0 + row, resolution[0]*6/8, resolution[1]*5/8))
-        final_lines, phrase = render_textrect(line, char,  pygame.Rect((resolution[0]/8, resolution[1]/8, resolution[0]*6/8, resolution[1]*6/8)), char_color, background)
+        phrasebox = pygame.Rect((resolution[0]/8, rise + 0 + row, resolution[0]*6/8, resolution[1]*5/8))
+        final_lines, phrase = render_textrect(line, char,  pygame.Rect((resolution[0]/8, resolution[1]/8, resolution[0]*6/8, resolution[1]*6/8)), color, background)
         screen.blit(phrase, phrasebox)
         row += 40 * len(final_lines)
     if just_info:
@@ -348,11 +352,13 @@ def minigame():
     green = (0,255,0)
     blue = (0,0,255)
 
-    colors = [Color('#6b5b95'), Color('#feb236'), Color('#d64161'), Color('#ff7b25')]
-    colors.extend(colors)
-    colors.append(colors[randint(0, 7)])
-
+    colors = [Color('#6b5b95'), Color('#feb236'), Color('#d64161'), Color('#ff7b25')] * 3
     shuffle(colors)
+    colors = colors[:-3]
+
+    sides_list = [3,4,5,6] * 3
+    shuffle(sides_list)
+    sides_list = sides_list[:-3]
 
     x_positions = [-screen.get_width()/4, 0, screen.get_width()/4]*3
 
@@ -363,13 +369,9 @@ def minigame():
     y_positions.extend(y_base_positions)
     y_base_positions.rotate(1)
     y_positions.extend(y_base_positions)
-
-    sides_list = [3,4,5,6]*3
-
-    shuffle(sides_list)
-
+    
     for i in range(len(colors)):
-        actual_sides = sides_list.pop()
+        actual_sides = sides_list[i]
         if actual_sides == 4:
             actual_rotation = 45
         else:
@@ -377,16 +379,11 @@ def minigame():
         polygon = polygon_creator(sides = actual_sides, x = x_positions[i], y = y_positions[i], radius = 70, rotation = actual_rotation)
         pygame.draw.polygon(screen, colors[i], polygon)
 
-    #polygon = polygon_creator(sides = 3, x = -screen.get_width()/4, y = 0, radius = 70, rotation = 0)
-    #pygame.draw.polygon(screen, red, polygon)
-    #polygon = polygon_creator(sides = 4, x = 0, y = 0, radius = 70, rotation = 45)
-    #pygame.draw.polygon(screen, green, polygon)
-    #polygon = polygon_creator(sides = 5, x = screen.get_width()/4, y = 0, radius = 70, rotation = 0)
-    #pygame.draw.polygon(screen, blue, polygon)
-
     pygame.display.update()
     
     pygame.time.delay(10000)
+
+    return(sides_list, colors)
 
 class button():
     def __init__(self, color, x,y,width,height, text=''):
@@ -408,7 +405,7 @@ class button():
             #font = pygame.font.SysFont('comicsans', 60)
             font = join('media', 'Arial_Rounded_MT_Bold.ttf')
             char = pygame.font.Font(font, 32)
-            text = char.render(self.text, 1, (0,0,0))
+            text = char.render(self.text, 1, (211,211,211))
             win.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
 
     def isOver(self, pos):
@@ -418,20 +415,37 @@ class button():
             
         return False
 
-def answer_page():
-    paragraph(["Indique cuantos ...."], False, None)
+def answer_page(sides_list, colors):
+
+    sides_choice = choice(sides_list)
+    color_choice = choice(colors)
+
+    question_block_rise = -100
+
+    colors_transformation = { '(107, 91, 149, 255)': 'Lila' , '(214, 65, 97, 255)': 'Fucsia', '(254, 178, 54, 255)': 'Amarillento', '(255, 123, 37, 255)': 'Naranja'}
+
+    sides_question = choice([True, False])
+    
+    if sides_question:
+        question = unicode("Indique cuantos polígonos de " + str(sides_choice) + " lados había en la pantalla anterior.", "utf-8")
+        correct_answer = sides_list.count(sides_choice)
+        paragraph([question], False, None, rise = question_block_rise)
+    else:
+        question = unicode("Indique cuantos polígonos de color " + colors_transformation[str(color_choice)] + " había en la pantalla anterior.", "utf-8")
+        correct_answer = colors.count(color_choice)
+        paragraph([question], False, None, rise = question_block_rise, color = color_choice)
     
     answer = False
     pygame.mouse.set_visible(True)
     while not answer:
         button_size = 100
-        zero_button = button((51,51,51), screen.get_width()/5 - (button_size/2), 2*screen.get_height()/3, button_size, button_size, '0')
+        zero_button = button((51,51,51), screen.get_width()/5 - (button_size/2), 2*screen.get_height()/3 + question_block_rise, button_size, button_size, '0')
         zero_button.draw(screen, (255,255,255))
-        one_button = button((51,51,51), screen.get_width()/5*2 - (button_size/2), 2*screen.get_height()/3, button_size, button_size, '1')
+        one_button = button((51,51,51), screen.get_width()/5*2 - (button_size/2), 2*screen.get_height()/3 + question_block_rise, button_size, button_size, '1')
         one_button.draw(screen, (255,255,255))
-        two_button = button((51,51,51), screen.get_width()/5*3 - (button_size/2), 2*screen.get_height()/3, button_size, button_size, '2')
+        two_button = button((51,51,51), screen.get_width()/5*3 - (button_size/2), 2*screen.get_height()/3 + question_block_rise, button_size, button_size, '2')
         two_button.draw(screen, (255,255,255))
-        three_button = button((51,51,51), screen.get_width()/5*4 - (button_size/2), 2*screen.get_height()/3, button_size, button_size, '3')
+        three_button = button((51,51,51), screen.get_width()/5*4 - (button_size/2), 2*screen.get_height()/3 + question_block_rise, button_size, button_size, '3')
         three_button.draw(screen, (255,255,255))
         pygame.display.update()
 
@@ -446,19 +460,19 @@ def answer_page():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if zero_button.isOver(pos):
                     selected = 0
-                    print("selected = " + str(selected))
+                    #print("selected = " + str(selected))
                     answer = True
                 elif one_button.isOver(pos):
                     selected = 1
-                    print("selected = " + str(selected))
+                    #print("selected = " + str(selected))
                     answer = True
                 elif two_button.isOver(pos):
                     selected = 2
-                    print("selected = " + str(selected))
+                    #print("selected = " + str(selected))
                     answer = True
                 elif three_button.isOver(pos):
                     selected = 3
-                    print("selected = " + str(selected))
+                    #print("selected = " + str(selected))
                     answer = True
 
             if event.type == pygame.MOUSEMOTION:
@@ -477,8 +491,20 @@ def answer_page():
                     three_button.color = (0,255,0)
                     
     pygame.mouse.set_visible(False)
-        
+    
+    if sides_question:
+        slide([unicode(("Correcto!" if (selected == correct_answer) else "Incorrecto") + " en la pregunta anterior habían " + str(correct_answer) + " polígonos de " + str(sides_choice) + " lados.", "utf-8")], True, K_SPACE)
+    else:
+        slide([unicode(("Correcto!" if (selected == correct_answer) else "Incorrecto") + " en la pregunta anterior habían " + str(correct_answer) + " polígonos de color " + colors_transformation[str(color_choice)] + ".", "utf-8")], True, K_SPACE)
 
+def minigame_block(minigame_blocks = 1):
+
+    slide([unicode("A continuación verás una serie de polígonos de distintos colores.", "utf-8"), unicode("Trata de memorizarlos lo mejor posible y luego responde la pregunta que verás.", "utf-8")], True, K_SPACE)
+    
+    for i in range(minigame_blocks):
+        sides_list, colors = minigame()
+        answer_page(sides_list, colors)
+        
 def ends():
     """Closes the show"""
     blackscreen()
@@ -535,20 +561,18 @@ def main():
     for i in range (len(selected_order)):
         
         actual_words_list = words_list[selected_order[i][0]-1][selected_order[i][1]-1]
-        print("type: " + str(selected_order[i][0]-1))
-        print("block: " + str(selected_order[i][1]-1))
-        print(actual_words_list)
-        print(len(actual_words_list))
+        #print("type: " + str(selected_order[i][0]-1))
+        #print("block: " + str(selected_order[i][1]-1))
+        #print(actual_words_list)
+        #print(len(actual_words_list))
 
         #for j in range(base_words_for_block):
         #    if len(words) > 0:
         #        actual_words_list.append(words.pop(0))
 
-        show_word_list(actual_words_list, subj_name, dfile, actual_block)
+        #show_word_list(actual_words_list, subj_name, dfile, actual_block)
 
-        #minigame()
-
-        #answer_page()
+        minigame_block(3)
 
         block_text = "Fin del bloque número " + str(actual_block)
         intermission_text = [block_text.decode('utf-8'), ""]
