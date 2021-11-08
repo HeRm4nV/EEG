@@ -570,7 +570,7 @@ def main():
         #    if len(words) > 0:
         #        actual_words_list.append(words.pop(0))
 
-        #show_word_list(actual_words_list, subj_name, dfile, actual_block)
+        show_word_list(actual_words_list, subj_name, dfile, actual_block)
 
         minigame_block(3)
 
