@@ -572,7 +572,8 @@ def main():
 
         show_word_list(actual_words_list, subj_name, dfile, actual_block)
 
-        minigame_block(3)
+        if ( (i+1) % 3 == 0 ):
+            minigame_block(3)
 
         block_text = "Fin del bloque número " + str(actual_block)
         intermission_text = [block_text.decode('utf-8'), ""]
