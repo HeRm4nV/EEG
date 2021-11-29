@@ -44,7 +44,10 @@ with open('media/words.csv', 'r') as csvfile:
         if row['religion'] != '':
             religion_words.append(row['religion'].decode('utf-8'))
         if row['magic'] != '':
-            magic_words.append(row['magic'].decode('utf-8'))
+            if (row['magic'] == 'Psí­quica'):
+                magic_words.append(("Psiquica".replace("i","í",1)).decode('utf-8'))
+            else:
+                magic_words.append(row['magic'].decode('utf-8'))
         if row['secular'] != '':
             secular_words.append(row['secular'].decode('utf-8'))
 
@@ -71,8 +74,8 @@ slides = {
         u"Instrucciones:",
         " ",
         u"A continuación, verás en pantalla palabras que aparecen por un breve periodo de tiempo.",
-        u"Después que la palabra desaparezca, quedará una cruz en el centro de la pantalla",
-        u"mientras esté presente, tendrás que pensar en conceptos relacionados con la palabra que acabas de ver.",
+        u"Después que las palabras desaparezcan, quedará una cruz roja en el centro de la pantalla",
+        u"mientras esté presente, tendrás que pensar en conceptos relacionados con las palabras que acabas de ver.",
         u"Finalmente, cuando te indiquemos, tendrás que verbalizar (decir) las palabras que acabas de pensar.",
         " ",
         u"Primero haremos un ensayo.",
@@ -230,7 +233,7 @@ def paragraph(text, just_info, key, rise = 0, color = None):
 
     if color == None:
         color = char_color
-    
+
     for line in text:
         #try:
         #    phrase    = char.render(line, True, char_color)
@@ -290,12 +293,14 @@ def words_to_matrix_conversion(base_list, block_size):
         final_matrix.append([])
         for j in range(len(base_list[0])/block_size):
             final_matrix[i].append(base_list[i][j*block_size:(j+1)*block_size])
-    return(final_matrix)  
+    return(final_matrix)
 
 def show_word_list(word_list, subj_name, dfile, block_number):
     """Main game"""
 
+    print(word_list)
     for word in word_list:
+        print(word)
         word_show = bigchar.render(word, True, char_color)
         wordbox   = word_show.get_rect(centerx = center[0], centery = center[1])
 
@@ -320,7 +325,7 @@ def show_word_list(word_list, subj_name, dfile, block_number):
     screen.fill(background)
     pygame.display.flip()
 
-    screen.blit(fix, fixbox)
+    screen.blit(bigchar.render('+', True, Color('red')), fixbox)
     pygame.display.update(fixbox)
     pygame.time.delay(mental_time)
     screen.fill(background)
@@ -329,7 +334,7 @@ def show_word_list(word_list, subj_name, dfile, block_number):
 
     r_time = slide(slides['spell'], True, K_RETURN, 20000)
     if dfile != None:
-        dfile.write("%s,%s,%s,%s,%s\n" % (subj_name, block_number, word.encode('utf-8'), str(r_time), ""))
+        dfile.write("%s,%s,%s,%s,%s\n" % (subj_name, block_number, u' '.join([elem for elem in word_list]).encode('utf-8'), str(r_time), ""))
 
 def polygon_creator (sides, x = 0, y = 0, radius = 1, rotation = 0):
 
@@ -369,7 +374,7 @@ def minigame():
     y_positions.extend(y_base_positions)
     y_base_positions.rotate(1)
     y_positions.extend(y_base_positions)
-    
+
     for i in range(len(colors)):
         actual_sides = sides_list[i]
         if actual_sides == 4:
@@ -380,13 +385,13 @@ def minigame():
         pygame.draw.polygon(screen, colors[i], polygon)
 
     pygame.display.update()
-    
+
     pygame.time.delay(10000)
 
     return(sides_list, colors)
 
 class button():
-    def __init__(self, color, x,y,width,height, text=''):
+    def __init__(self, color, x, y, width, height, text=''):
         self.color = color
         self.x = x
         self.y = y
@@ -398,9 +403,9 @@ class button():
         #Call this method to draw the button on the screen
         if outline:
             pygame.draw.rect(win, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
-            
+
         pygame.draw.rect(win, self.color, (self.x,self.y,self.width,self.height),0)
-        
+
         if self.text != '':
             #font = pygame.font.SysFont('comicsans', 60)
             font = join('media', 'Arial_Rounded_MT_Bold.ttf')
@@ -412,7 +417,7 @@ class button():
         #Pos is the mouse position or a tuple of (x,y) coordinates
         if self.x < pos[0] < self.x + self.width and self.y < pos[1] < self.y + self.height:
             return True
-            
+
         return False
 
 def answer_page(sides_list, colors):
@@ -422,10 +427,10 @@ def answer_page(sides_list, colors):
 
     question_block_rise = -100
 
-    colors_transformation = { '(107, 91, 149, 255)': 'Lila' , '(214, 65, 97, 255)': 'Fucsia', '(254, 178, 54, 255)': 'Amarillento', '(255, 123, 37, 255)': 'Naranja'}
+    colors_transformation = { '(107, 91, 149, 255)': 'Lila' , '(214, 65, 97, 255)': 'Fucsia', '(254, 178, 54, 255)': 'Amarillo', '(255, 123, 37, 255)': 'Naranja'}
 
     sides_question = choice([True, False])
-    
+
     if sides_question:
         question = unicode("Indique cuantos polígonos de " + str(sides_choice) + " lados había en la pantalla anterior.", "utf-8")
         correct_answer = sides_list.count(sides_choice)
@@ -434,21 +439,22 @@ def answer_page(sides_list, colors):
         question = unicode("Indique cuantos polígonos de color " + colors_transformation[str(color_choice)] + " había en la pantalla anterior.", "utf-8")
         correct_answer = colors.count(color_choice)
         paragraph([question], False, None, rise = question_block_rise, color = color_choice)
-    
+
     answer = False
     pygame.mouse.set_visible(True)
-    while not answer:
-        button_size = 100
-        zero_button = button((51,51,51), screen.get_width()/5 - (button_size/2), 2*screen.get_height()/3 + question_block_rise, button_size, button_size, '0')
-        zero_button.draw(screen, (255,255,255))
-        one_button = button((51,51,51), screen.get_width()/5*2 - (button_size/2), 2*screen.get_height()/3 + question_block_rise, button_size, button_size, '1')
-        one_button.draw(screen, (255,255,255))
-        two_button = button((51,51,51), screen.get_width()/5*3 - (button_size/2), 2*screen.get_height()/3 + question_block_rise, button_size, button_size, '2')
-        two_button.draw(screen, (255,255,255))
-        three_button = button((51,51,51), screen.get_width()/5*4 - (button_size/2), 2*screen.get_height()/3 + question_block_rise, button_size, button_size, '3')
-        three_button.draw(screen, (255,255,255))
-        pygame.display.update()
 
+    button_size = 100
+    zero_button = button((51,51,51), screen.get_width()/5 - (button_size/2), 2*screen.get_height()/3 + question_block_rise, button_size, button_size, '0')
+    zero_button.draw(screen, (255,255,255))
+    one_button = button((51,51,51), screen.get_width()/5*2 - (button_size/2), 2*screen.get_height()/3 + question_block_rise, button_size, button_size, '1')
+    one_button.draw(screen, (255,255,255))
+    two_button = button((51,51,51), screen.get_width()/5*3 - (button_size/2), 2*screen.get_height()/3 + question_block_rise, button_size, button_size, '2')
+    two_button.draw(screen, (255,255,255))
+    three_button = button((51,51,51), screen.get_width()/5*4 - (button_size/2), 2*screen.get_height()/3 + question_block_rise, button_size, button_size, '3')
+    three_button.draw(screen, (255,255,255))
+    pygame.display.update()
+
+    while not answer:
         for event in pygame.event.get():
             pos = pygame.mouse.get_pos()
 
@@ -477,21 +483,23 @@ def answer_page(sides_list, colors):
 
             if event.type == pygame.MOUSEMOTION:
                 if zero_button.isOver(pos):
-                    zero_button.color = (0,0,255)
+                    zero_button.draw(screen, (255,0,0))
                 elif one_button.isOver(pos):
-                    one_button.color = (0,0,255)
+                    one_button.draw(screen, (255,0,0))
                 elif two_button.isOver(pos):
-                    two_button.color = (0,0,255)
+                    two_button.draw(screen, (255,0,0))
                 elif three_button.isOver(pos):
-                    three_button.color = (0,0,255)
+                    three_button.draw(screen, (255,0,0))
                 else:
-                    zero_button.color = (0,255,0)
-                    one_button.color = (0,255,0)
-                    two_button.color = (0,255,0)
-                    three_button.color = (0,255,0)
-                    
+                    zero_button.draw(screen, (255,255,255))
+                    one_button.draw(screen, (255,255,255))
+                    two_button.draw(screen, (255,255,255))
+                    three_button.draw(screen, (255,255,255))
+
+                pygame.display.update()
+
     pygame.mouse.set_visible(False)
-    
+
     if sides_question:
         slide([unicode(("Correcto!" if (selected == correct_answer) else "Incorrecto") + " en la pregunta anterior habían " + str(correct_answer) + " polígonos de " + str(sides_choice) + " lados.", "utf-8")], True, K_SPACE)
     else:
@@ -500,11 +508,11 @@ def answer_page(sides_list, colors):
 def minigame_block(minigame_blocks = 1):
 
     slide([unicode("A continuación verás una serie de polígonos de distintos colores.", "utf-8"), unicode("Trata de memorizarlos lo mejor posible y luego responde la pregunta que verás.", "utf-8")], True, K_SPACE)
-    
+
     for i in range(minigame_blocks):
         sides_list, colors = minigame()
         answer_page(sides_list, colors)
-        
+
 def ends():
     """Closes the show"""
     blackscreen()
@@ -528,9 +536,9 @@ def main():
     subj_name = raw_input("Escriba un nombre de archivo y presione ENTER para iniciar: ")
     csv_name  = join('data', date_name + '_' + subj_name + '.csv')
     dfile = open(csv_name, 'w')
-    dfile.write("ID,Block,Word,Rt,Answer\n")
+    dfile.write("ID,Block,Words,Rt,Answer\n")
     init()
-    
+
     slide(slides['welcome1'] , False , K_SPACE)
     slide(slides['welcome2'] , False , K_SPACE)
 
@@ -556,28 +564,21 @@ def main():
 
     random_orders = [[(1,1), (2,2), (3,3), (2,1), (3,4), (1,5), (3,5), (2,3), (1,4), (1,3), (2,5), (3,2), (2,4), (3,1), (1,2)], [(3,1), (2,4), (1,5), (1,2), (2,3), (3,4), (2,2), (3,5), (1,3), (3,3), (1,1), (2,5), (1,4), (2,1), (3,2)], [(2,3), (3,5), (1,1), (3,1), (1,5), (2,1), (2,5), (1,3), (3,4), (3,2), (2,4), (1,2), (1,4), (3,3), (2,2)]]
 
-    selected_order = choice(random_orders)    
+    selected_order = choice(random_orders)
 
     for i in range (len(selected_order)):
-        
-        actual_words_list = words_list[selected_order[i][0]-1][selected_order[i][1]-1]
-        #print("type: " + str(selected_order[i][0]-1))
-        #print("block: " + str(selected_order[i][1]-1))
-        #print(actual_words_list)
-        #print(len(actual_words_list))
 
-        #for j in range(base_words_for_block):
-        #    if len(words) > 0:
-        #        actual_words_list.append(words.pop(0))
+        actual_words_list = words_list[selected_order[i][0]-1][selected_order[i][1]-1]
 
         show_word_list(actual_words_list, subj_name, dfile, actual_block)
-
-        if ( (i+1) % 3 == 0 ):
-            minigame_block(3)
 
         block_text = "Fin del bloque número " + str(actual_block)
         intermission_text = [block_text.decode('utf-8'), ""]
         slide(intermission_text, True , K_SPACE)
+
+        if ( (i+1) % 3 == 0 ):
+            minigame_block(3)
+
         actual_block += 1
 
     dfile.close()
