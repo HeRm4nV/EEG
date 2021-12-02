@@ -1,0 +1,20 @@
+DLPortIO x64 installation
+
+WindowsXP-64bit
+ * Run DLPortIO_install.bat from administrator login.
+ * Answer "Yes" for question about Windows registry changes.
+ * reboot
+
+Windows7-64bit
+ * Download Digital Signature Enforsement Overrider (DSEO) from
+     http://www.ngohq.com/home.php?page=dseo
+ * Run deso as administrator (right click on dseo13b.exe, select "run as administrator"). See dseo site for details.
+   + Sign DLPortIO.sys driver in directory where installation archive was unpacked to.
+   + Enable test mode.
+ * Run DLPortIO_install.bat as administrator.
+ * Answer "Yes" for question about Windows registry changes.
+ * reboot
+
+p.s. DLPortIO_install.bat must be runned from 64-bit file manager like Windows Explorer,
+not from 32-bit program like FAR.
+

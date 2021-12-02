@@ -1,0 +1,9 @@
+DLPortIO 32-bit installation with command-line installer
+
+Windows2000, WindowsXP, Windows7
+ * Run DLPORTIO_install.bat as administrator.
+ * Answer "Yes" for question about Windows registry changes.
+ * reboot
+
+Windows Vista is not tested.
+

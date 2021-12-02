@@ -20,12 +20,13 @@ from collections import deque
 FullScreenShow = True # Pantalla completa autom�ticamente al iniciar el experimento
 keys = [pygame.K_SPACE] # Teclas elegidas para mano derecha o izquierda
 
-fix_time   = 1000 # duracion cruz de fijacion
-pfix_time  = 250 # duracion posterior de la cruz de fijacion
-word_time  = 500 # duracion estimulo de palabra
-word_delay_min = 500
-word_delay_max = 1000
+#fix_time   = 1000 # duracion cruz de fijacion
+#pfix_time  = 250 # duracion posterior de la cruz de fijacion
+word_time  = 1000 # duracion estimulo de palabra
+word_delay_min = 1000
+word_delay_max = 1500
 mental_time  = 16000 # duracion elaboracion mental
+reset_time  = 16000 # duracion elaboracion mental
 blank_time = 400 # tiempo entre que la palabra desaparece y la proxima cruz de fijacion
 plus_minus = 200 # tiempo variable despues del blank time
 wait_time = 5000 # tiempo de pantalla para pensar en palabras
@@ -35,6 +36,60 @@ date_name = strftime("%Y-%m-%d_%H-%M-%S", gmtime())
 religion_words  = []
 magic_words     = []
 secular_words   = []
+
+## Port address and triggers
+lpt_address     = 0xD100
+trigger_latency = 5
+start_trigger   = 254
+stop_trigger    = 255
+
+# secular
+very_hard_secular = 001
+hard_secular = 002
+just_secular = 003
+less_hard_secular = 004
+not_hard_secular = 005
+mental_elaboration_start_secular = 011
+mental_elaboration_end_secular = 012
+verbal_start_secular = 021
+verbal_end_secular = 022
+minigame_start_secular = 031
+minigame_end_secular = 032
+minigame_correct_answer_secular = 041
+minigame_wrong_answer_secular = 042
+preparation_secular = 051
+
+# religious
+very_hard_religious = 101
+hard_religious = 102
+just_religious = 103
+less_hard_religious = 104
+not_hard_religious = 105
+mental_elaboration_start_religious = 111
+mental_elaboration_end_religious = 112
+verbal_start_religious = 121
+verbal_end_religious = 122
+minigame_start_religious = 131
+minigame_end_religious = 132
+minigame_correct_answer_religious = 141
+minigame_wrong_answer_religious = 142
+preparation_religious = 151
+
+# paranormal
+very_hard_paranormal = 201
+hard_paranormal = 202
+just_paranormal = 203
+less_hard_paranormal = 204
+not_hard_paranormal = 205
+mental_elaboration_start_paranormal = 211
+mental_elaboration_end_paranormal = 212
+verbal_start_paranormal = 221
+verbal_end_paranormal = 222
+minigame_start_paranormal = 231
+minigame_end_paranormal = 232
+minigame_correct_answer_paranormal = 241
+minigame_wrong_answer_paranormal = 242
+preparation_paranormal = 251
 
 with open('media/words.csv', 'r') as csvfile:
     reader = csv.DictReader(csvfile)
@@ -94,6 +149,42 @@ slides = {
         u"Muchas gracias por su colaboración!!"
         ]
     }
+
+# EEG Functions
+## Functions:
+def init_lpt(address):
+    """Creates and tests a parallell port"""
+    try:
+        from ctypes import windll
+        global io
+        io = windll.dlportio  # requires dlportio.dll !!!
+        #dll_name = "DLPortIO.dll"
+        #dirname = os.path.dirname(sys.argv[0])
+        #dll_dir = (dirname + "\\media\\dlportio-32\\" + dll_name)
+        #print(dll_dir)
+        #io = windll.LoadLibrary(dll_dir)
+        print('Parallel port opened')
+    except:
+        pass
+        print("Oops!", sys.exc_info(), "occurred.")
+        print('The parallel port couldn\'t be opened')
+    try:
+        io.DlPortWritePortUchar(address, 0)
+        print('Parallel port set to zero')
+    except:
+        pass
+        print('Failed to send initial zero trigger!')
+
+def send_trigger(trigger, address, latency):
+    """Sends a trigger to the parallell port"""
+    try:
+        io.DlPortWritePortUchar(address, trigger)  # Send trigger
+        pygame.time.delay(latency)  # Keep trigger pulse for some ms
+        io.DlPortWritePortUchar(address, 0)  # Get back to zero after some ms
+        print('Trigger ' + str(trigger) + ' sent')
+    except:
+        pass
+        print('Failed to send trigger ' + str(trigger))
 
 ## Functions:
 def setfonts():
@@ -295,12 +386,13 @@ def words_to_matrix_conversion(base_list, block_size):
             final_matrix[i].append(base_list[i][j*block_size:(j+1)*block_size])
     return(final_matrix)
 
-def show_word_list(word_list, subj_name, dfile, block_number):
+def show_word_list(word_list, subj_name, dfile, block_number, order_element):
     """Main game"""
 
-    print(word_list)
+    word_trigger = ((order_element[0] % 3) * 100) + order_element[1]
+    basic_trigger = ((order_element[0] % 3) * 100)
+
     for word in word_list:
-        print(word)
         word_show = bigchar.render(word, True, char_color)
         wordbox   = word_show.get_rect(centerx = center[0], centery = center[1])
 
@@ -316,6 +408,7 @@ def show_word_list(word_list, subj_name, dfile, block_number):
         pygame.display.flip()
         pygame.event.clear()                    # CLEAR EVENTS
 
+        send_trigger(word_trigger, lpt_address, trigger_latency)  # start word trigger
         screen.blit(word_show, wordbox)
         pygame.display.update(wordbox)
         pygame.time.delay(word_time)
@@ -325,14 +418,19 @@ def show_word_list(word_list, subj_name, dfile, block_number):
     screen.fill(background)
     pygame.display.flip()
 
+    send_trigger(basic_trigger + 11, lpt_address, trigger_latency)  # start mental trigger
     screen.blit(bigchar.render('+', True, Color('red')), fixbox)
     pygame.display.update(fixbox)
     pygame.time.delay(mental_time)
+
+    send_trigger(basic_trigger + 12, lpt_address, trigger_latency)  # end mental trigger
     screen.fill(background)
     pygame.display.flip()
     pygame.event.clear()                    # CLEAR EVENTS
 
+    send_trigger(basic_trigger + 21, lpt_address, trigger_latency)  # start verbal trigger
     r_time = slide(slides['spell'], True, K_RETURN, 20000)
+    send_trigger(basic_trigger + 22, lpt_address, trigger_latency)  # end verbal trigger
     if dfile != None:
         dfile.write("%s,%s,%s,%s,%s\n" % (subj_name, block_number, u' '.join([elem for elem in word_list]).encode('utf-8'), str(r_time), ""))
 
@@ -349,7 +447,10 @@ def polygon_creator (sides, x = 0, y = 0, radius = 1, rotation = 0):
 
     return polygon
 
-def minigame():
+def minigame(order_element):
+
+    basic_trigger = ((order_element[0] % 3) * 100)
+
     screen.fill(background)
     pygame.display.flip()
 
@@ -384,6 +485,7 @@ def minigame():
         polygon = polygon_creator(sides = actual_sides, x = x_positions[i], y = y_positions[i], radius = 70, rotation = actual_rotation)
         pygame.draw.polygon(screen, colors[i], polygon)
 
+    send_trigger(basic_trigger + 31, lpt_address, trigger_latency)  # start minigame trigger
     pygame.display.update()
 
     pygame.time.delay(10000)
@@ -420,7 +522,9 @@ class button():
 
         return False
 
-def answer_page(sides_list, colors):
+def answer_page(sides_list, colors, order_element):
+
+    basic_trigger = ((order_element[0] % 3) * 100)
 
     sides_choice = choice(sides_list)
     color_choice = choice(colors)
@@ -505,13 +609,21 @@ def answer_page(sides_list, colors):
     else:
         slide([unicode(("Correcto!" if (selected == correct_answer) else "Incorrecto") + " en la pregunta anterior habían " + str(correct_answer) + " polígonos de color " + colors_transformation[str(color_choice)] + ".", "utf-8")], True, K_SPACE)
 
-def minigame_block(minigame_blocks = 1):
+    if (selected == correct_answer):
+        send_trigger(basic_trigger + 41, lpt_address, trigger_latency)  # correct answer minigame trigger
+    else:
+        send_trigger(basic_trigger + 42, lpt_address, trigger_latency)  # wrong answer minigame trigger
+
+def minigame_block(order_element, minigame_blocks = 1):
 
     slide([unicode("A continuación verás una serie de polígonos de distintos colores.", "utf-8"), unicode("Trata de memorizarlos lo mejor posible y luego responde la pregunta que verás.", "utf-8")], True, K_SPACE)
 
     for i in range(minigame_blocks):
-        sides_list, colors = minigame()
-        answer_page(sides_list, colors)
+        sides_list, colors = minigame(order_element)
+        answer_page(sides_list, colors, order_element)
+
+    basic_trigger = ((order_element[0] % 3) * 100)
+    send_trigger(basic_trigger + 32, lpt_address, trigger_latency)  # end minigame trigger
 
 def ends():
     """Closes the show"""
@@ -529,6 +641,8 @@ def main():
     """Game's main loop"""
     global is_word_key
 
+    init_lpt(lpt_address)
+
     # Si no existe la carpeta data se crea
     if not os.path.exists('data/'):
         os.makedirs('data/')
@@ -539,6 +653,8 @@ def main():
     dfile.write("ID,Block,Words,Rt,Answer\n")
     init()
 
+    send_trigger(start_trigger, lpt_address, trigger_latency)  # start EEG recording
+
     slide(slides['welcome1'] , False , K_SPACE)
     slide(slides['welcome2'] , False , K_SPACE)
 
@@ -548,16 +664,6 @@ def main():
 
     count_blocks = int((len(religion_words) + len(magic_words) + len(secular_words))/base_words_for_block)
 
-    #shuffle(religion_words)
-    #shuffle(magic_words)
-    #shuffle(secular_words)
-
-    #words = []
-    #words.extend(religion_words)
-    #words.extend(magic_words)
-    #words.extend(secular_words)
-
-    #words_for_block = base_words_for_block
     actual_list = 0
 
     words_list = words_to_matrix_conversion([religion_words, magic_words, secular_words], 18)
@@ -570,20 +676,30 @@ def main():
 
         actual_words_list = words_list[selected_order[i][0]-1][selected_order[i][1]-1]
 
-        show_word_list(actual_words_list, subj_name, dfile, actual_block)
+        show_word_list(actual_words_list, subj_name, dfile, actual_block, selected_order[i])
+
+        #if ( (i+1) % 3 == 0 ):
+        minigame_block(selected_order[i], 3)
+
+        basic_trigger = ((selected_order[i][0] % 3) * 100)
+        screen.fill(background)
+        pygame.display.flip()
+
+        send_trigger(basic_trigger + 51, lpt_address, trigger_latency)  # start reset time trigger
+        screen.blit(bigchar.render('+', True, char_color), fixbox)
+        pygame.display.update(fixbox)
+        pygame.time.delay(reset_time)
 
         block_text = "Fin del bloque número " + str(actual_block)
         intermission_text = [block_text.decode('utf-8'), ""]
         slide(intermission_text, True , K_SPACE)
-
-        if ( (i+1) % 3 == 0 ):
-            minigame_block(3)
 
         actual_block += 1
 
     dfile.close()
     pygame.time.delay(blank_time + plus_minus)
     slide(slides['farewell'], True , K_SPACE)
+    send_trigger(stop_trigger, lpt_address, trigger_latency)  # stop EEG recording
     ends()
 
 ## Experiment starts here...
