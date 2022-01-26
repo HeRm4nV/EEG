@@ -22,12 +22,14 @@ keys = [pygame.K_SPACE] # Teclas elegidas para mano derecha o izquierda
 
 #fix_time   = 1000 # duracion cruz de fijacion
 #pfix_time  = 250 # duracion posterior de la cruz de fijacion
-word_time  = 1000 # duracion estimulo de palabra
-word_delay_min = 1000
-word_delay_max = 1500
+word_time_min  = 600 # duracion estimulo de palabra
+word_time_max  = 700 # duracion estimulo de palabra
+word_delay_min = 400
+word_delay_max = 600
 mental_time  = 16000 # duracion elaboracion mental
 reset_time  = 16000 # duracion elaboracion mental
-blank_time = 400 # tiempo entre que la palabra desaparece y la proxima cruz de fijacion
+blank_time_min = 900 # tiempo en blanco entre conjuntos de palabras
+blank_time_max = 1000 # tiempo en blanco entre conjuntos de palabras
 plus_minus = 200 # tiempo variable despues del blank time
 wait_time = 5000 # tiempo de pantalla para pensar en palabras
 base_words_for_block = 18
@@ -91,20 +93,24 @@ minigame_correct_answer_paranormal = 241
 minigame_wrong_answer_paranormal = 242
 preparation_paranormal = 251
 
-with open('media/words.csv', 'r') as csvfile:
+with open('media/180_words.csv', 'r') as csvfile:
     reader = csv.DictReader(csvfile)
     line_counter = 0
     for row in reader:
         line_counter += 1
-        if row['religion'] != '':
-            religion_words.append(row['religion'].decode('utf-8'))
-        if row['magic'] != '':
-            if (row['magic'] == 'Psí­quica'):
-                magic_words.append(("Psiquica".replace("i","í",1)).decode('utf-8'))
+        if row['word_type'] == 'religious':
+            religion_words.append([row['word'].decode('utf-8'), 'vinculated'])
+        if row['word_type'] != 'magic':
+            if (row['word'] == 'Psí­quica'):
+                magic_words.append([("Psiquica".replace("i","í",1)).decode('utf-8'), 'vinculated'])
             else:
-                magic_words.append(row['magic'].decode('utf-8'))
-        if row['secular'] != '':
-            secular_words.append(row['secular'].decode('utf-8'))
+                magic_words.append([row['word'].decode('utf-8'), 'vinculated'])
+        if row['word_type'] != 'secular':
+            secular_words.append([row['word'].decode('utf-8'), 'vinculated'])
+
+    shuffle(religion_words)
+    shuffle(magic_words)
+    shuffle(secular_words)
 
 # This return the names dictionary from pygame
 f=open("media/pygame_local_data.txt", "r")
@@ -386,51 +392,61 @@ def words_to_matrix_conversion(base_list, block_size):
             final_matrix[i].append(base_list[i][j*block_size:(j+1)*block_size])
     return(final_matrix)
 
-def show_word_list(word_list, subj_name, dfile, block_number, order_element):
+def show_word_list(word_list, subj_name, dfile, block_number):
     """Main game"""
 
-    word_trigger = ((order_element[0] % 3) * 100) + order_element[1]
-    basic_trigger = ((order_element[0] % 3) * 100)
+    #word_trigger = ((order_element[0] % 3) * 100) + order_element[1]
+    #basic_trigger = ((order_element[0] % 3) * 100)
 
-    for word in word_list:
-        word_show = bigchar.render(word, True, char_color)
-        wordbox   = word_show.get_rect(centerx = center[0], centery = center[1])
+    for word_pair in word_list:
+        between_words = False
+        for word in word_pair:
+            word_show = bigchar.render(word, True, char_color)
+            wordbox   = word_show.get_rect(centerx = center[0], centery = center[1])
 
+            screen.fill(background)
+            pygame.display.flip()
+
+            if (between_words):
+                # time between_words
+                word_delay = randrange(word_delay_min, word_delay_max)
+
+                screen.blit(fix, fixbox)
+                pygame.display.update(fixbox)
+                pygame.time.delay(word_delay)
+                screen.fill(background)
+                pygame.display.flip()
+                pygame.event.clear()                    # CLEAR EVENTS
+
+            word_time = randrange(word_time_min, word_time_max)
+
+            #send_trigger(word_trigger, lpt_address, trigger_latency)  # start word trigger
+            screen.blit(word_show, wordbox)
+            pygame.display.update(wordbox)
+            pygame.time.delay(word_time)
+
+            pygame.event.clear()                    # CLEAR EVENTS
+
+            between_words = True
+
+        blank_time = randrange(blank_time_min, blank_time_max)
         screen.fill(background)
         pygame.display.flip()
+        pygame.time.delay(blank_time)
 
-        word_delay = randrange(word_delay_min, word_delay_max)
-
-        screen.blit(fix, fixbox)
-        pygame.display.update(fixbox)
-        pygame.time.delay(word_delay)
-        screen.fill(background)
-        pygame.display.flip()
-        pygame.event.clear()                    # CLEAR EVENTS
-
-        send_trigger(word_trigger, lpt_address, trigger_latency)  # start word trigger
-        screen.blit(word_show, wordbox)
-        pygame.display.update(wordbox)
-        pygame.time.delay(word_time)
-
-        pygame.event.clear()                    # CLEAR EVENTS
-
-    screen.fill(background)
-    pygame.display.flip()
-
-    send_trigger(basic_trigger + 11, lpt_address, trigger_latency)  # start mental trigger
+    #send_trigger(basic_trigger + 11, lpt_address, trigger_latency)  # start mental trigger
     screen.blit(bigchar.render('+', True, Color('red')), fixbox)
     pygame.display.update(fixbox)
     pygame.time.delay(mental_time)
 
-    send_trigger(basic_trigger + 12, lpt_address, trigger_latency)  # end mental trigger
+    #send_trigger(basic_trigger + 12, lpt_address, trigger_latency)  # end mental trigger
     screen.fill(background)
     pygame.display.flip()
     pygame.event.clear()                    # CLEAR EVENTS
 
-    send_trigger(basic_trigger + 21, lpt_address, trigger_latency)  # start verbal trigger
+    #send_trigger(basic_trigger + 21, lpt_address, trigger_latency)  # start verbal trigger
     r_time = slide(slides['spell'], True, K_RETURN, 20000)
-    send_trigger(basic_trigger + 22, lpt_address, trigger_latency)  # end verbal trigger
+    #send_trigger(basic_trigger + 22, lpt_address, trigger_latency)  # end verbal trigger
     if dfile != None:
         dfile.write("%s,%s,%s,%s,%s\n" % (subj_name, block_number, u' '.join([elem for elem in word_list]).encode('utf-8'), str(r_time), ""))
 
@@ -485,7 +501,7 @@ def minigame(order_element):
         polygon = polygon_creator(sides = actual_sides, x = x_positions[i], y = y_positions[i], radius = 70, rotation = actual_rotation)
         pygame.draw.polygon(screen, colors[i], polygon)
 
-    send_trigger(basic_trigger + 31, lpt_address, trigger_latency)  # start minigame trigger
+    #send_trigger(basic_trigger + 31, lpt_address, trigger_latency)  # start minigame trigger
     pygame.display.update()
 
     pygame.time.delay(10000)
@@ -609,10 +625,10 @@ def answer_page(sides_list, colors, order_element):
     else:
         slide([unicode(("Correcto!" if (selected == correct_answer) else "Incorrecto") + " en la pregunta anterior habían " + str(correct_answer) + " polígonos de color " + colors_transformation[str(color_choice)] + ".", "utf-8")], True, K_SPACE)
 
-    if (selected == correct_answer):
-        send_trigger(basic_trigger + 41, lpt_address, trigger_latency)  # correct answer minigame trigger
-    else:
-        send_trigger(basic_trigger + 42, lpt_address, trigger_latency)  # wrong answer minigame trigger
+    #if (selected == correct_answer):
+        #send_trigger(basic_trigger + 41, lpt_address, trigger_latency)  # correct answer minigame trigger
+    #else:
+        #send_trigger(basic_trigger + 42, lpt_address, trigger_latency)  # wrong answer minigame trigger
 
 def minigame_block(order_element, minigame_blocks = 1):
 
@@ -623,7 +639,7 @@ def minigame_block(order_element, minigame_blocks = 1):
         answer_page(sides_list, colors, order_element)
 
     basic_trigger = ((order_element[0] % 3) * 100)
-    send_trigger(basic_trigger + 32, lpt_address, trigger_latency)  # end minigame trigger
+    #send_trigger(basic_trigger + 32, lpt_address, trigger_latency)  # end minigame trigger
 
 def ends():
     """Closes the show"""
@@ -641,7 +657,7 @@ def main():
     """Game's main loop"""
     global is_word_key
 
-    init_lpt(lpt_address)
+    #init_lpt(lpt_address)
 
     # Si no existe la carpeta data se crea
     if not os.path.exists('data/'):
@@ -653,39 +669,42 @@ def main():
     dfile.write("ID,Block,Words,Rt,Answer\n")
     init()
 
-    send_trigger(start_trigger, lpt_address, trigger_latency)  # start EEG recording
+    #send_trigger(start_trigger, lpt_address, trigger_latency)  # start EEG recording
 
     slide(slides['welcome1'] , False , K_SPACE)
     slide(slides['welcome2'] , False , K_SPACE)
 
     actual_block = 1
 
-    counts = [0, 0, 0]
+    #counts = [0, 0, 0]
 
-    count_blocks = int((len(religion_words) + len(magic_words) + len(secular_words))/base_words_for_block)
+    #count_blocks = int((len(religion_words) + len(magic_words) + len(secular_words))/base_words_for_block)
 
-    actual_list = 0
+    #actual_list = 0
 
-    words_list = words_to_matrix_conversion([religion_words, magic_words, secular_words], 18)
+    #words_list = words_to_matrix_conversion([religion_words, magic_words, secular_words], 18)
+    words_list = [religion_words, magic_words, secular_words]
 
-    random_orders = [[(1,1), (2,2), (3,3), (2,1), (3,4), (1,5), (3,5), (2,3), (1,4), (1,3), (2,5), (3,2), (2,4), (3,1), (1,2)], [(3,1), (2,4), (1,5), (1,2), (2,3), (3,4), (2,2), (3,5), (1,3), (3,3), (1,1), (2,5), (1,4), (2,1), (3,2)], [(2,3), (3,5), (1,1), (3,1), (1,5), (2,1), (2,5), (1,3), (3,4), (3,2), (2,4), (1,2), (1,4), (3,3), (2,2)]]
+    blocks = 3
 
-    selected_order = choice(random_orders)
+    #random_orders = [[(1,1), (2,2), (3,3), (2,1), (3,4), (1,5), (3,5), (2,3), (1,4), (1,3), (2,5), (3,2), (2,4), (3,1), (1,2)], [(3,1), (2,4), (1,5), (1,2), (2,3), (3,4), (2,2), (3,5), (1,3), (3,3), (1,1), (2,5), (1,4), (2,1), (3,2)], [(2,3), (3,5), (1,1), (3,1), (1,5), (2,1), (2,5), (1,3), (3,4), (3,2), (2,4), (1,2), (1,4), (3,3), (2,2)]]
 
-    for i in range (len(selected_order)):
+    #selected_order = choice(random_orders)
 
-        actual_words_list = words_list[selected_order[i][0]-1][selected_order[i][1]-1]
+    for i in range (blocks):
 
-        show_word_list(actual_words_list, subj_name, dfile, actual_block, selected_order[i])
+        actual_words_list = words_list[i]
+
+        show_word_list(actual_words_list, subj_name, dfile, actual_block)
 
         #if ( (i+1) % 3 == 0 ):
-        minigame_block(selected_order[i], 3)
+        #minigame_block(selected_order[i], 3)
 
-        basic_trigger = ((selected_order[i][0] % 3) * 100)
+        #basic_trigger = ((selected_order[i][0] % 3) * 100)
         screen.fill(background)
         pygame.display.flip()
 
-        send_trigger(basic_trigger + 51, lpt_address, trigger_latency)  # start reset time trigger
+        #send_trigger(basic_trigger + 51, lpt_address, trigger_latency)  # start reset time trigger
         screen.blit(bigchar.render('+', True, char_color), fixbox)
         pygame.display.update(fixbox)
         pygame.time.delay(reset_time)
@@ -697,9 +716,9 @@ def main():
         actual_block += 1
 
     dfile.close()
-    pygame.time.delay(blank_time + plus_minus)
+    #pygame.time.delay(blank_time + plus_minus)
     slide(slides['farewell'], True , K_SPACE)
-    send_trigger(stop_trigger, lpt_address, trigger_latency)  # stop EEG recording
+    #send_trigger(stop_trigger, lpt_address, trigger_latency)  # stop EEG recording
     ends()
 
 ## Experiment starts here...
