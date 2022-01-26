@@ -35,9 +35,12 @@ wait_time = 5000 # tiempo de pantalla para pensar en palabras
 base_words_for_block = 18
 
 date_name = strftime("%Y-%m-%d_%H-%M-%S", gmtime())
-religion_words  = []
-magic_words     = []
-secular_words   = []
+religion_words_C  = []
+religion_words_I  = []
+magic_words_C     = []
+magic_words_I     = []
+secular_words_C   = []
+secular_words_I   = []
 
 ## Port address and triggers
 lpt_address     = 0xD100
@@ -93,24 +96,59 @@ minigame_correct_answer_paranormal = 241
 minigame_wrong_answer_paranormal = 242
 preparation_paranormal = 251
 
-with open('media/180_words.csv', 'r') as csvfile:
+with open('media/words_list.csv', 'r') as csvfile:
+
+    for i in range(2):
+        csvfile.next()
+
     reader = csv.DictReader(csvfile)
     line_counter = 0
     for row in reader:
         line_counter += 1
-        if row['word_type'] == 'religious':
-            religion_words.append([row['word'].decode('utf-8'), 'vinculated'])
-        if row['word_type'] != 'magic':
-            if (row['word'] == 'Psí­quica'):
-                magic_words.append([("Psiquica".replace("i","í",1)).decode('utf-8'), 'vinculated'])
-            else:
-                magic_words.append([row['word'].decode('utf-8'), 'vinculated'])
-        if row['word_type'] != 'secular':
-            secular_words.append([row['word'].decode('utf-8'), 'vinculated'])
 
-    shuffle(religion_words)
-    shuffle(magic_words)
-    shuffle(secular_words)
+        religion_words_C.append([row['Religiosa_RCP'].decode('utf-8'), row['Religiosa_RCT'].decode('utf-8')])
+
+        religion_words_I.append([row['Religiosa_RIP'].decode('utf-8'), row['Secular_RIT'].decode('utf-8')])
+
+        if (row['Magica_MCP'] == 'psí­quica'):
+            magic_words_C.append([("psiquica".replace("i","í",1)).decode('utf-8'), row['Magica_MCT'].decode('utf-8')])
+        elif (row['Magica_MCT'] == 'psí­quica'):
+            magic_words_C.append([row['Magica_MCP'].decode('utf-8'), ("psiquica".replace("i","í",1)).decode('utf-8')])
+        else:
+            magic_words_C.append([row['Magica_MCP'].decode('utf-8'), row['Magica_MCT'].decode('utf-8')])
+
+
+        if (row['Magica_MIP'] == 'psí­quica'):
+            magic_words_I.append([("psiquica".replace("i","í",1)).decode('utf-8'), row['Secular_MIT'].decode('utf-8')])
+        else:
+            magic_words_I.append([row['Magica_MIP'].decode('utf-8'), row['Secular_MIT'].decode('utf-8')])
+
+
+        secular_words_C.append([row['Secular_SCP'].decode('utf-8'), row['Secular_SCT'].decode('utf-8')])
+
+        secular_words_I.append([row['Secular_SIP'].decode('utf-8'), row['Religiosa_SIT'].decode('utf-8')])
+
+    shuffle(religion_words_C)
+    shuffle(religion_words_I)
+    shuffle(magic_words_C)
+    shuffle(magic_words_I)
+    shuffle(secular_words_C)
+    shuffle(secular_words_I)
+
+    #print(religion_words_C)
+    #print("-------------------------------------")
+    #print(religion_words_I)
+    #print("-------------------------------------")
+    #print(magic_words_C)
+    #print("-------------------------------------")
+    #print(magic_words_I)
+    #print("-------------------------------------")
+    #print(secular_words_C)
+    #print("-------------------------------------")
+    #print(secular_words_I)
+
+
+    #input()
 
 # This return the names dictionary from pygame
 f=open("media/pygame_local_data.txt", "r")
@@ -683,9 +721,9 @@ def main():
     #actual_list = 0
 
     #words_list = words_to_matrix_conversion([religion_words, magic_words, secular_words], 18)
-    words_list = [religion_words, magic_words, secular_words]
+    words_list = [religion_words_C, religion_words_I, magic_words_C, magic_words_I, secular_words_C, secular_words_I]
 
-    blocks = 3
+    blocks = len(words_list)
 
     #random_orders = [[(1,1), (2,2), (3,3), (2,1), (3,4), (1,5), (3,5), (2,3), (1,4), (1,3), (2,5), (3,2), (2,4), (3,1), (1,2)], [(3,1), (2,4), (1,5), (1,2), (2,3), (3,4), (2,2), (3,5), (1,3), (3,3), (1,1), (2,5), (1,4), (2,1), (3,2)], [(2,3), (3,5), (1,1), (3,1), (1,5), (2,1), (2,5), (1,3), (3,4), (3,2), (2,4), (1,2), (1,4), (3,3), (2,2)]]
 
