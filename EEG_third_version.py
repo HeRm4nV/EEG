@@ -31,6 +31,7 @@ mental_time  = 16000 # duracion elaboracion mental
 reset_time  = 16000 # duracion elaboracion mental
 blank_time_min = 1200 # tiempo en blanco entre conjuntos de palabras
 blank_time_max = 1500 # tiempo en blanco entre conjuntos de palabras
+blank_before_question = 1000 # tiempo en blanco entre palabra y pregunta
 plus_minus = 200 # tiempo variable despues del blank time
 wait_time = 5000 # tiempo de pantalla para pensar en palabras
 base_words_for_block = 18
@@ -511,6 +512,11 @@ def show_word_list(word_list, subj_name, dfile, block_number):
             last_word = word
 
         if (is_question.pop()):
+
+            #blank_time = randrange(900, 1000)
+            screen.fill(background)
+            pygame.display.flip()
+            pygame.time.delay(blank_before_question)
 
             #print(last_word)
 
