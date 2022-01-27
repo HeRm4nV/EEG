@@ -828,9 +828,9 @@ def main():
         pygame.display.flip()
 
         #send_trigger(basic_trigger + 51, lpt_address, trigger_latency)  # start reset time trigger
-        screen.blit(bigchar.render('+', True, char_color), fixbox)
-        pygame.display.update(fixbox)
-        pygame.time.delay(reset_time)
+        #screen.blit(bigchar.render('+', True, char_color), fixbox)
+        #pygame.display.update(fixbox)
+        #pygame.time.delay(reset_time)
 
         block_text = "Fin del bloque número " + str(actual_block)
         intermission_text = [block_text.decode('utf-8'), ""]
