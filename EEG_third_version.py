@@ -8,13 +8,14 @@
 tested in Python 2.7.18
 """
 import csv, pygame , random, sys, os
-from pygame.locals import FULLSCREEN, USEREVENT, KEYDOWN, KEYUP, K_SPACE, K_RETURN, K_ESCAPE, QUIT, Color
+from pygame.locals import FULLSCREEN, USEREVENT, KEYDOWN, KEYUP, K_SPACE, K_RETURN, K_ESCAPE, K_LCTRL, K_RCTRL, QUIT, Color
 from os.path import join
 from random import seed, sample, randint, shuffle, randrange, choice
 from time import gmtime, strftime
 from copy import deepcopy
-import math
+import math, string
 from collections import deque
+import unicodedata
 
 ## Configurations:
 FullScreenShow = True # Pantalla completa autom�ticamente al iniciar el experimento
@@ -135,6 +136,8 @@ with open('media/words_list.csv', 'r') as csvfile:
     shuffle(secular_words_C)
     shuffle(secular_words_I)
 
+    block_names = ["religious_congruent", "religious_incongruent", "magic_congruent", "magic_incongruent", "secular_congruent", "secular_incongruent"]
+
     #print(religion_words_C)
     #print("-------------------------------------")
     #print(religion_words_I)
@@ -196,6 +199,7 @@ slides = {
 
 # EEG Functions
 ## Functions:
+
 def init_lpt(address):
     """Creates and tests a parallell port"""
     try:
@@ -230,7 +234,11 @@ def send_trigger(trigger, address, latency):
         pass
         print('Failed to send trigger ' + str(trigger))
 
-## Functions:
+def remove_accents(input_str):
+    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    only_ascii = nfkd_form.encode('ASCII', 'ignore')
+    return only_ascii
+
 def setfonts():
     """Sets font parameters"""
     global bigchar, char, charnext
@@ -420,6 +428,34 @@ def wait(key, limit_time):
 
     return (pygame.time.get_ticks() - tw)
 
+def wait_answer(key1, key2, limit_time = 0):
+    """Hold a bit"""
+
+    TIME_OUT_WAIT = USEREVENT + 1
+    if limit_time != 0:
+        pygame.time.set_timer(TIME_OUT_WAIT, wait_time)
+
+    tw = pygame.time.get_ticks()
+
+    switch = True
+    while switch:
+        for event in pygame.event.get():
+            if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
+                pygame_exit()
+            if event.type == KEYUP:
+                if event.key == key1:
+                    answer = "Si"
+                    switch = False
+                elif event.key == key2:
+                    answer = "No"
+                    switch = False
+            if event.type == TIME_OUT_WAIT and limit_time != 0:
+                if ((pygame.time.get_ticks() - tw) > limit_time):
+                    switch = False
+                    pygame.time.set_timer(TIME_OUT_WAIT, 0)
+
+    return answer, (pygame.time.get_ticks() - tw)
+
 #create a cubir matrix with [type][block][word] matrix size = type_size(3)*list/block_size(5)*block_size(18)
 #base_list is [[type_1],[type_2]....]
 def words_to_matrix_conversion(base_list, block_size):
@@ -436,12 +472,15 @@ def show_word_list(word_list, subj_name, dfile, block_number):
     #word_trigger = ((order_element[0] % 3) * 100) + order_element[1]
     #basic_trigger = ((order_element[0] % 3) * 100)
 
+    in_word = [True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
+
+    shuffle(in_word)
+
+    last_word = ""
+    pair_section = False
     for word_pair in word_list:
         between_words = False
         for word in word_pair:
-            word_show = bigchar.render(word, True, char_color)
-            wordbox   = word_show.get_rect(centerx = center[0], centery = center[1])
-
             screen.fill(background)
             pygame.display.flip()
 
@@ -456,8 +495,9 @@ def show_word_list(word_list, subj_name, dfile, block_number):
                 pygame.display.flip()
                 pygame.event.clear()                    # CLEAR EVENTS
 
+            word_show = bigchar.render(word, True, char_color)
+            wordbox   = word_show.get_rect(centerx = center[0], centery = center[1])
             word_time = randrange(word_time_min, word_time_max)
-
             #send_trigger(word_trigger, lpt_address, trigger_latency)  # start word trigger
             screen.blit(word_show, wordbox)
             pygame.display.update(wordbox)
@@ -466,6 +506,61 @@ def show_word_list(word_list, subj_name, dfile, block_number):
             pygame.event.clear()                    # CLEAR EVENTS
 
             between_words = True
+            last_word = word
+
+        if (pair_section):
+
+            #print(last_word)
+
+            target_word = remove_accents(last_word)
+
+            letra = " "
+            is_in_word = in_word.pop()
+
+            if (is_in_word):
+                letra = choice(target_word)
+                correct_answer = "Si"
+            else:
+                letra = choice(string.ascii_lowercase)
+                while letra in target_word:
+                    letra = choice(string.ascii_lowercase)
+                correct_answer = "No"
+
+            #print(letra)
+            #print(is_in_word)
+
+            rise = 0
+            color = char_color
+
+            text = [u"¿Estaba la letra " + letra + u" en la última palabra que observaste?", " ", " ", u"Presione CTRL Izq para Si o CTRL Der para No"]
+
+            screen.fill(background)
+            row = center[1] - 20 * len(text)
+            for line in text:
+                phrasebox = pygame.Rect((resolution[0]/8, rise + 0 + row, resolution[0]*6/8, resolution[1]*5/8))
+                final_lines, phrase = render_textrect(line, char,  pygame.Rect((resolution[0]/8, resolution[1]/8, resolution[0]*6/8, resolution[1]*6/8)), color, background)
+                screen.blit(phrase, phrasebox)
+                row += 40 * len(final_lines)
+            pygame.display.flip()
+
+            actual_answer, r_time = wait_answer(K_LCTRL, K_RCTRL, limit_time = 0)
+            #print(actual_answer)
+
+            #send_trigger(basic_trigger + 21, lpt_address, trigger_latency)  # start verbal trigger
+            #r_time = slide(slides['spell'], True, K_RETURN, 20000)
+            #send_trigger(basic_trigger + 22, lpt_address, trigger_latency)  # end verbal trigger
+            if dfile != None:
+                print(subj_name)
+                print(block_names[block_number-1])
+                print(last_word)
+                print(letra)
+                print(str(r_time))
+                print(actual_answer)
+                print(correct_answer)
+                #dfile.write("%s,%s,%s,%s,%s\n" % (subj_name, block_number, u' '.join([elem for elem in word_list]).encode('utf-8'), str(r_time), ""))
+                dfile.write("%s,%s,%s,%s,%s,%s,%s\n" % (subj_name, block_names[block_number-1], unicodedata.normalize('NFKD', last_word).encode('ascii', 'ignore'), letra, str(r_time), actual_answer, correct_answer))
+
+        pair_section = not pair_section
 
         blank_time = randrange(blank_time_min, blank_time_max)
         screen.fill(background)
@@ -473,20 +568,15 @@ def show_word_list(word_list, subj_name, dfile, block_number):
         pygame.time.delay(blank_time)
 
     #send_trigger(basic_trigger + 11, lpt_address, trigger_latency)  # start mental trigger
-    screen.blit(bigchar.render('+', True, Color('red')), fixbox)
-    pygame.display.update(fixbox)
-    pygame.time.delay(mental_time)
+    #screen.blit(bigchar.render('+', True, Color('red')), fixbox)
+    #pygame.display.update(fixbox)
+    #pygame.time.delay(mental_time)
 
     #send_trigger(basic_trigger + 12, lpt_address, trigger_latency)  # end mental trigger
-    screen.fill(background)
-    pygame.display.flip()
+    #screen.fill(background)
+    #pygame.display.flip()
     pygame.event.clear()                    # CLEAR EVENTS
 
-    #send_trigger(basic_trigger + 21, lpt_address, trigger_latency)  # start verbal trigger
-    r_time = slide(slides['spell'], True, K_RETURN, 20000)
-    #send_trigger(basic_trigger + 22, lpt_address, trigger_latency)  # end verbal trigger
-    if dfile != None:
-        dfile.write("%s,%s,%s,%s,%s\n" % (subj_name, block_number, u' '.join([elem for elem in word_list]).encode('utf-8'), str(r_time), ""))
 
 def polygon_creator (sides, x = 0, y = 0, radius = 1, rotation = 0):
 
@@ -704,7 +794,7 @@ def main():
     subj_name = raw_input("Escriba un nombre de archivo y presione ENTER para iniciar: ")
     csv_name  = join('data', date_name + '_' + subj_name + '.csv')
     dfile = open(csv_name, 'w')
-    dfile.write("ID,Block,Words,Rt,Answer\n")
+    dfile.write("ID,BlockName,Word,Character,Rt,Answer,CorrectAnswer\n")
     init()
 
     #send_trigger(start_trigger, lpt_address, trigger_latency)  # start EEG recording
