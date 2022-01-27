@@ -29,8 +29,8 @@ word_delay_min = 400
 word_delay_max = 600
 mental_time  = 16000 # duracion elaboracion mental
 reset_time  = 16000 # duracion elaboracion mental
-blank_time_min = 900 # tiempo en blanco entre conjuntos de palabras
-blank_time_max = 1000 # tiempo en blanco entre conjuntos de palabras
+blank_time_min = 1200 # tiempo en blanco entre conjuntos de palabras
+blank_time_max = 1500 # tiempo en blanco entre conjuntos de palabras
 plus_minus = 200 # tiempo variable despues del blank time
 wait_time = 5000 # tiempo de pantalla para pensar en palabras
 base_words_for_block = 18
@@ -472,9 +472,11 @@ def show_word_list(word_list, subj_name, dfile, block_number):
     #word_trigger = ((order_element[0] % 3) * 100) + order_element[1]
     #basic_trigger = ((order_element[0] % 3) * 100)
 
+    is_question = [True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
     in_word = [True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
 
     shuffle(in_word)
+    shuffle(is_question)
 
     last_word = ""
     pair_section = False
@@ -508,7 +510,7 @@ def show_word_list(word_list, subj_name, dfile, block_number):
             between_words = True
             last_word = word
 
-        if (pair_section):
+        if (is_question.pop()):
 
             #print(last_word)
 
@@ -550,17 +552,10 @@ def show_word_list(word_list, subj_name, dfile, block_number):
             #r_time = slide(slides['spell'], True, K_RETURN, 20000)
             #send_trigger(basic_trigger + 22, lpt_address, trigger_latency)  # end verbal trigger
             if dfile != None:
-                print(subj_name)
-                print(block_names[block_number-1])
-                print(last_word)
-                print(letra)
-                print(str(r_time))
-                print(actual_answer)
-                print(correct_answer)
                 #dfile.write("%s,%s,%s,%s,%s\n" % (subj_name, block_number, u' '.join([elem for elem in word_list]).encode('utf-8'), str(r_time), ""))
                 dfile.write("%s,%s,%s,%s,%s,%s,%s\n" % (subj_name, block_names[block_number-1], unicodedata.normalize('NFKD', last_word).encode('ascii', 'ignore'), letra, str(r_time), actual_answer, correct_answer))
 
-        pair_section = not pair_section
+        #pair_section = not pair_section
 
         blank_time = randrange(blank_time_min, blank_time_max)
         screen.fill(background)
