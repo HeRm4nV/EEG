@@ -185,6 +185,36 @@ slides = {
         u"Cuando estés listo presione la barra espaciadora.",
         " "
         ],
+    'intructions_religious': [
+        u"Instrucciones bloque palabras religiosas:",
+        " ",
+        u"A continuación se presentará una secuencia de pares de palabras religiosas.",
+        u" ",
+        u"En algunas ocasiones le preguntaremos si una letra específica es parte o no de la última palabra observada.",
+        " ",
+        u"Cuando estés listo presione la barra espaciadora.",
+        " "
+        ],
+    'intructions_magic': [
+        u"Instrucciones bloque palabras mágicas:",
+        " ",
+        u"A continuación se presentará una secuencia de pares de palabras mágicas.",
+        u" ",
+        u"En algunas ocasiones le preguntaremos si una letra específica es parte o no de la última palabra observada.",
+        " ",
+        u"Cuando estés listo presione la barra espaciadora.",
+        " "
+        ],
+    'intructions_secular': [
+        u"Instrucciones bloque palabras seculares:",
+        " ",
+        u"A continuación se presentará una secuencia de pares de palabras seculares.",
+        u" ",
+        u"En algunas ocasiones le preguntaremos si una letra específica es parte o no de la última palabra observada.",
+        " ",
+        u"Cuando estés listo presione la barra espaciadora.",
+        " "
+        ],
     'wait': [
         "+"
         ],
@@ -467,17 +497,11 @@ def words_to_matrix_conversion(base_list, block_size):
             final_matrix[i].append(base_list[i][j*block_size:(j+1)*block_size])
     return(final_matrix)
 
-def show_word_list(word_list, subj_name, dfile, block_number):
+def show_word_list(word_list, subj_name, dfile, block_number, in_word, is_question):
     """Main game"""
 
     #word_trigger = ((order_element[0] % 3) * 100) + order_element[1]
     #basic_trigger = ((order_element[0] % 3) * 100)
-
-    is_question = [True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
-    in_word = [True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
-
-    shuffle(in_word)
-    shuffle(is_question)
 
     last_word = ""
     pair_section = False
@@ -558,8 +582,9 @@ def show_word_list(word_list, subj_name, dfile, block_number):
             #r_time = slide(slides['spell'], True, K_RETURN, 20000)
             #send_trigger(basic_trigger + 22, lpt_address, trigger_latency)  # end verbal trigger
             if dfile != None:
+                is_correct = (actual_answer == correct_answer)
                 #dfile.write("%s,%s,%s,%s,%s\n" % (subj_name, block_number, u' '.join([elem for elem in word_list]).encode('utf-8'), str(r_time), ""))
-                dfile.write("%s,%s,%s,%s,%s,%s,%s\n" % (subj_name, block_names[block_number-1], unicodedata.normalize('NFKD', last_word).encode('ascii', 'ignore'), letra, str(r_time), actual_answer, correct_answer))
+                dfile.write("%s,%s,%s,%s,%s,%s,%s,%s\n" % (subj_name, block_names[block_number-1], unicodedata.normalize('NFKD', last_word).encode('ascii', 'ignore'), letra, str(r_time), actual_answer, correct_answer, is_correct))
 
         #pair_section = not pair_section
 
@@ -795,13 +820,13 @@ def main():
     subj_name = raw_input("Escriba un nombre de archivo y presione ENTER para iniciar: ")
     csv_name  = join('data', date_name + '_' + subj_name + '.csv')
     dfile = open(csv_name, 'w')
-    dfile.write("ID,BlockName,Word,Character,Rt,Answer,CorrectAnswer\n")
+    dfile.write("ID,BlockName,Word,Character,Rt,Answer,CorrectAnswer,isCorrect\n")
     init()
 
     #send_trigger(start_trigger, lpt_address, trigger_latency)  # start EEG recording
 
     slide(slides['welcome1'] , False , K_SPACE)
-    slide(slides['welcome2'] , False , K_SPACE)
+    #slide(slides['welcome2'] , False , K_SPACE)
 
     actual_block = 1
 
@@ -814,17 +839,77 @@ def main():
     #words_list = words_to_matrix_conversion([religion_words, magic_words, secular_words], 18)
     words_list = [religion_words_C, religion_words_I, magic_words_C, magic_words_I, secular_words_C, secular_words_I]
 
-    blocks = len(words_list)
+    blocks = len(words_list) / 2
 
     #random_orders = [[(1,1), (2,2), (3,3), (2,1), (3,4), (1,5), (3,5), (2,3), (1,4), (1,3), (2,5), (3,2), (2,4), (3,1), (1,2)], [(3,1), (2,4), (1,5), (1,2), (2,3), (3,4), (2,2), (3,5), (1,3), (3,3), (1,1), (2,5), (1,4), (2,1), (3,2)], [(2,3), (3,5), (1,1), (3,1), (1,5), (2,1), (2,5), (1,3), (3,4), (3,2), (2,4), (1,2), (1,4), (3,3), (2,2)]]
 
     #selected_order = choice(random_orders)
 
+    intructions_list = ["intructions_religious", "intructions_magic", "intructions_secular"]
+
     for i in range (blocks):
 
-        actual_words_list = words_list[i]
+        slide(slides[intructions_list[i]] , False , K_SPACE)
 
-        show_word_list(actual_words_list, subj_name, dfile, actual_block)
+        # letra está dentro de la palabra?
+        in_word = [True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
+        # Este conjunto tiene pregunta?
+        is_question = [True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
+
+        shuffle(is_question)
+        is_question_block = is_question
+        shuffle(is_question)
+        is_question_block += is_question
+
+        shuffle(in_word)
+        in_word_temp = in_word
+        shuffle(in_word)
+        in_word_temp += in_word
+
+        #print(is_question.count(True))
+        #print(len(in_word))
+        #print("-------------")
+
+        in_word_block = []
+
+        cont = 0
+        # Se hace la conexión con in_word para las is_question
+        for actual_is_question in is_question:
+            if (actual_is_question):
+                in_word_block.append(in_word_temp[cont])
+                cont+=1
+            else:
+                in_word_block.append("to_delete")
+
+        actual_words_list = words_list[i*2] + words_list[(i*2) + 1]
+
+        #shuffle(in_word)
+        #shuffle(is_question)
+
+        temp = list(zip(is_question_block, actual_words_list, in_word_block))
+        random.shuffle(temp)
+        is_question_block, actual_words_list, in_word_block = zip(*temp)
+
+        is_question_block = list(is_question_block)
+        actual_words_list = list(actual_words_list)
+        in_word_block = list (in_word_block)
+
+        #print(in_word_block)
+        #print("-------------------------")
+
+        try:
+            while True:
+                in_word_block.remove("to_delete")
+        except ValueError:
+            pass
+
+        #print(is_question_block)
+        #print(actual_words_list)
+        #print(in_word_block)
+
+        #input()
+
+        show_word_list(actual_words_list, subj_name, dfile, actual_block, in_word_block, is_question_block)
 
         #if ( (i+1) % 3 == 0 ):
         #minigame_block(selected_order[i], 3)
