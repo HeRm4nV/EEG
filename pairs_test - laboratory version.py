@@ -46,52 +46,39 @@ start_trigger   = 254
 stop_trigger    = 255
 
 # secular
-very_hard_secular = 001
-hard_secular = 002
-just_secular = 003
-less_hard_secular = 004
-not_hard_secular = 005
-mental_elaboration_start_secular = 011
-mental_elaboration_end_secular = 012
-verbal_start_secular = 021
-verbal_end_secular = 022
-minigame_start_secular = 031
-minigame_end_secular = 032
-minigame_correct_answer_secular = 041
-minigame_wrong_answer_secular = 042
-preparation_secular = 051
+SCP = 001
+SCT = 002
+SIP = 011
+SIT = 012
+question_start_secular = 021
+yes_answer_secular = 031
+no_answer_secular = 032
+correct_answer_secular = 041
+wrong_answer_secular = 042
 
 # religious
-very_hard_religious = 101
-hard_religious = 102
-just_religious = 103
-less_hard_religious = 104
-not_hard_religious = 105
-mental_elaboration_start_religious = 111
-mental_elaboration_end_religious = 112
-verbal_start_religious = 121
-verbal_end_religious = 122
-minigame_start_religious = 131
-minigame_end_religious = 132
-minigame_correct_answer_religious = 141
-minigame_wrong_answer_religious = 142
-preparation_religious = 151
+RCP = 101
+RCT = 102
+RIP = 111
+RIT = 112
+question_start_religious = 121
+yes_answer_religious = 131
+no_answer_religious = 132
+correct_answer_religious = 141
+wrong_answer_religious = 142
 
-# paranormal
-very_hard_paranormal = 201
-hard_paranormal = 202
-just_paranormal = 203
-less_hard_paranormal = 204
-not_hard_paranormal = 205
-mental_elaboration_start_paranormal = 211
-mental_elaboration_end_paranormal = 212
-verbal_start_paranormal = 221
-verbal_end_paranormal = 222
-minigame_start_paranormal = 231
-minigame_end_paranormal = 232
-minigame_correct_answer_paranormal = 241
-minigame_wrong_answer_paranormal = 242
-preparation_paranormal = 251
+# magic
+MCP = 201
+MCT = 202
+MIP = 211
+MIT = 212
+question_start_magic = 221
+yes_answer_magic = 231
+no_answer_magic = 232
+correct_answer_magic = 241
+wrong_answer_magic = 242
+
+code_access = {"secular" = 0, "religious" = 1, "magic" = 2, "congruent" = 0, "incongruent" = 1, "prime" = 1, "target" = 2, "question_start" = 21, "yes_answer" = 31, "no_answer" = 32, "correct_answer" = 41, "wrong_answer" = 42}
 
 with open('media/words_list.csv', 'r') as csvfile:
 
@@ -253,9 +240,6 @@ def init():
     global screen, resolution, center, background, char_color, charnext_color, fix, fixbox, fix_think, fixbox_think, izq, der, quest, questbox
     pygame.init() # soluciona el error de inicializacion de pygame.time
     pygame.display.init()
-    #iconpath = join('media', 'spiderman.png')
-    #icon     = pygame.image.load(iconpath)
-    #pygame.display.set_icon(icon)
     pygame.display.set_caption("EEG")
     pygame.mouse.set_visible(False)
     if FullScreenShow:
@@ -377,10 +361,6 @@ def paragraph(text, just_info, key, rise = 0, color = None):
         color = char_color
 
     for line in text:
-        #try:
-        #    phrase    = char.render(line, True, char_color)
-        #    phrasebox = pygame.Rect((resolution[0]/8, 0 + row, resolution[0]*6/8, resolution[1]*5/8))
-        #except:
         phrasebox = pygame.Rect((resolution[0]/8, rise + 0 + row, resolution[0]*6/8, resolution[1]*5/8))
         final_lines, phrase = render_textrect(line, char,  pygame.Rect((resolution[0]/8, resolution[1]/8, resolution[0]*6/8, resolution[1]*6/8)), color, background)
         screen.blit(phrase, phrasebox)
@@ -455,11 +435,8 @@ def wait_answer(key1, key2, limit_time = 0):
 
     return answer, (pygame.time.get_ticks() - tw)
 
-def show_word_list(word_list, subj_name, dfile, block_number, in_word, is_question, block_names):
+def show_word_list(block_type, word_list, subj_name, dfile, block_number, in_word, is_question, block_names):
     """Main game"""
-
-    #word_trigger = ((order_element[0] % 3) * 100) + order_element[1]
-    #basic_trigger = ((order_element[0] % 3) * 100)
 
     last_word = ""
     question_count = 0
@@ -480,13 +457,14 @@ def show_word_list(word_list, subj_name, dfile, block_number, in_word, is_questi
                 pygame.display.flip()
                 pygame.event.clear()                    # CLEAR EVENTS
                 last_word = word
+                send_trigger((code_access[block_type])*100 + code_access[('incongruent' if ('incongruent' in block_names[i]) else 'congruent')]*10 + code_access["target"], lpt_address, trigger_latency)  # second word trigger
             else:
                 first_word = word
+                send_trigger((code_access[block_type])*100 + code_access[('incongruent' if ('incongruent' in block_names[i]) else 'congruent')]*10 + code_access["prime"], lpt_address, trigger_latency)  # first word trigger
 
             word_show = bigchar.render(word, True, char_color)
             wordbox   = word_show.get_rect(centerx = center[0], centery = center[1])
             word_time = randrange(word_time_min, word_time_max)
-            #send_trigger(word_trigger, lpt_address, trigger_latency)  # start word trigger
             screen.blit(word_show, wordbox)
             pygame.display.update(wordbox)
             pygame.time.delay(word_time)
@@ -496,8 +474,6 @@ def show_word_list(word_list, subj_name, dfile, block_number, in_word, is_questi
             between_words = True
 
         if (is_question[i]):
-
-            #blank_time = randrange(900, 1000)
             screen.fill(background)
             pygame.display.flip()
             pygame.time.delay(blank_before_question)
@@ -532,14 +508,21 @@ def show_word_list(word_list, subj_name, dfile, block_number, in_word, is_questi
                 row += 40 * len(final_lines)
             pygame.display.flip()
 
-            actual_answer, r_time = wait_answer(K_LCTRL, K_RCTRL, limit_time = 0)
-            #print(actual_answer)
+            send_trigger(code_access[block_type]*100 + code_access["question_start"], lpt_address, trigger_latency)  # show question trigger
 
-            #send_trigger(basic_trigger + 21, lpt_address, trigger_latency)  # start verbal trigger
-            #r_time = slide(slides['spell'], True, K_RETURN, 20000)
-            #send_trigger(basic_trigger + 22, lpt_address, trigger_latency)  # end verbal trigger
+            actual_answer, r_time = wait_answer(K_LCTRL, K_RCTRL, limit_time = 0)
+
+            if (actual_answer == "Si"):
+                send_trigger(code_access[block_type]*100 + code_access["yes_answer"], lpt_address, trigger_latency)  # SI answer trigger
+            else:
+                send_trigger(code_access[block_type]*100 + code_access["no_answer"], lpt_address, trigger_latency)  # NO answer trigger
 
             is_correct = (actual_answer == correct_answer)
+
+            if (is_correct):
+                send_trigger(code_access[block_type]*100 + code_access["correct_answer"], lpt_address, trigger_latency)  # correct answer trigger
+            else:
+                send_trigger(code_access[block_type]*100 + code_access["wrong_answer"], lpt_address, trigger_latency)  # wrong answer trigger
 
         else:
             letra = ""
@@ -549,7 +532,6 @@ def show_word_list(word_list, subj_name, dfile, block_number, in_word, is_questi
             is_correct = ""
 
         if dfile != None:
-            #dfile.write("%s,%s,%s,%s,%s\n" % (subj_name, block_number, u' '.join([elem for elem in word_list]).encode('utf-8'), str(r_time), ""))
             dfile.write("%s,%s,%s,%s,%s,%s,%s,%s,%s\n" % (subj_name, block_names[i], unicodedata.normalize('NFKD', first_word).encode('ascii', 'ignore'), unicodedata.normalize('NFKD', last_word).encode('ascii', 'ignore'), letra, str(r_time), actual_answer, correct_answer, is_correct))
 
         blank_time = randrange(blank_time_min, blank_time_max)
@@ -558,13 +540,6 @@ def show_word_list(word_list, subj_name, dfile, block_number, in_word, is_questi
         pygame.time.delay(blank_time)
 
     pygame.event.clear()                    # CLEAR EVENTS
-
-
-
-    #if (selected == correct_answer):
-        #send_trigger(basic_trigger + 41, lpt_address, trigger_latency)  # correct answer minigame trigger
-    #else:
-        #send_trigger(basic_trigger + 42, lpt_address, trigger_latency)  # wrong answer minigame trigger
 
 def ends():
     """Closes the show"""
@@ -582,7 +557,7 @@ def main():
     """Game's main loop"""
     global is_word_key
 
-    #init_lpt(lpt_address)
+    init_lpt(lpt_address)
 
     # Si no existe la carpeta data se crea
     if not os.path.exists('data/'):
@@ -594,7 +569,7 @@ def main():
     dfile.write("ID,BlockName,FirstWord,SecondWord,Character,Rt,Answer,CorrectAnswer,isCorrect\n")
     init()
 
-    #send_trigger(start_trigger, lpt_address, trigger_latency)  # start EEG recording
+    send_trigger(start_trigger, lpt_address, trigger_latency)  # start EEG recording
 
     slide(slides['welcome1'] , False , K_SPACE)
 
@@ -655,9 +630,15 @@ def main():
         except ValueError:
             pass
 
-        show_word_list(actual_words_list, subj_name, dfile, actual_block, in_word_block, is_question_block, block_names)
+        if i == 0:
+            block_type = "religious"
+        elif i == 1:
+            block_type = "magic"
+        else:
+            block_type = "secular"
 
-        #basic_trigger = ((selected_order[i][0] % 3) * 100)
+        show_word_list(block_type, actual_words_list, subj_name, dfile, actual_block, in_word_block, is_question_block, block_names)
+
         screen.fill(background)
         pygame.display.flip()
 
@@ -670,7 +651,7 @@ def main():
     dfile.close()
     pygame.time.delay(blank_time_max)
     slide(slides['farewell'], True , K_SPACE)
-    #send_trigger(stop_trigger, lpt_address, trigger_latency)  # stop EEG recording
+    send_trigger(stop_trigger, lpt_address, trigger_latency)  # stop EEG recording
     ends()
 
 ## Experiment starts here...
