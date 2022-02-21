@@ -642,6 +642,8 @@ def main():
         screen.fill(background)
         pygame.display.flip()
 
+        send_trigger((actual_block)*100 + 69, lpt_address, trigger_latency)  # final block trigger
+
         block_text = "Fin del bloque número " + str(actual_block)
         intermission_text = [block_text.decode('utf-8'), ""]
         slide(intermission_text, True , K_SPACE)
