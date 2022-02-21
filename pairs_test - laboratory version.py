@@ -78,7 +78,7 @@ no_answer_magic = 232
 correct_answer_magic = 241
 wrong_answer_magic = 242
 
-code_access = {"secular" = 0, "religious" = 1, "magic" = 2, "congruent" = 0, "incongruent" = 1, "prime" = 1, "target" = 2, "question_start" = 21, "yes_answer" = 31, "no_answer" = 32, "correct_answer" = 41, "wrong_answer" = 42}
+code_access = {"secular": 0, "religious": 1, "magic": 2, "congruent": 0, "incongruent": 1, "prime": 1, "target": 2, "question_start": 21, "yes_answer": 31, "no_answer": 32, "correct_answer": 41, "wrong_answer": 42}
 
 with open('media/words_list.csv', 'r') as csvfile:
 
