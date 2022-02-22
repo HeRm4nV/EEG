@@ -143,9 +143,9 @@ slides = {
     'intructions_religious': [
         u"Instrucciones bloque palabras religiosas:",
         " ",
-        u"A continuación se presentará una secuencia de pares de palabras religiosas.",
+        u"A continuación le presentaremos una secuencia de pares de palabras solamente con contenido religioso, por ejemplo, evangelio ... rezar.",
         u" ",
-        u"En algunas ocasiones le preguntaremos si una letra específica es parte o no de la última palabra observada.",
+        u"Es importante que preste mucha atención porque en algunas ocasiones le preguntaremos si una letra específica es parte o no de la última palabra observada.",
         " ",
         u"Cuando estés listo presione la barra espaciadora.",
         " "
@@ -153,9 +153,9 @@ slides = {
     'intructions_magic': [
         u"Instrucciones bloque palabras mágicas:",
         " ",
-        u"A continuación se presentará una secuencia de pares de palabras mágicas.",
+        u"A continuación le presentaremos una secuencia de pares de palabras solamente con contenido mágico, por ejemplo, amuleto ... bruja.",
         u" ",
-        u"En algunas ocasiones le preguntaremos si una letra específica es parte o no de la última palabra observada.",
+        u"Es importante que preste mucha atención porque en algunas ocasiones le preguntaremos si una letra específica es parte o no de la última palabra observada.",
         " ",
         u"Cuando estés listo presione la barra espaciadora.",
         " "
@@ -163,9 +163,9 @@ slides = {
     'intructions_secular': [
         u"Instrucciones bloque palabras seculares:",
         " ",
-        u"A continuación se presentará una secuencia de pares de palabras seculares.",
+        u"A continuación le presentaremos una secuencia de pares de palabras solamente con contenido secular, por ejemplo, médico ... elástico.",
         u" ",
-        u"En algunas ocasiones le preguntaremos si una letra específica es parte o no de la última palabra observada.",
+        u"Es importante que preste mucha atención porque en algunas ocasiones le preguntaremos si una letra específica es parte o no de la última palabra observada.",
         " ",
         u"Cuando estés listo presione la barra espaciadora.",
         " "
