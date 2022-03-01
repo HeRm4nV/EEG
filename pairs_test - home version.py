@@ -23,10 +23,10 @@ keys = [pygame.K_SPACE] # Teclas elegidas para mano derecha o izquierda
 
 word_time_min  = 600 # duracion estimulo de palabra
 word_time_max  = 700 # duracion estimulo de palabra
-word_delay_min = 400
-word_delay_max = 600
-blank_time_min = 1200 # tiempo en blanco entre conjuntos de palabras
-blank_time_max = 1500 # tiempo en blanco entre conjuntos de palabras
+word_delay_min = 900
+word_delay_max = 1000
+blank_time_min = 1500 # tiempo en blanco entre conjuntos de palabras
+blank_time_max = 2000 # tiempo en blanco entre conjuntos de palabras
 blank_before_question = 1000 # tiempo en blanco entre palabra y pregunta
 wait_time = 5000 # tiempo de pantalla para pensar en palabras
 base_words_for_block = 18
