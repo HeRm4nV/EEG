@@ -450,8 +450,8 @@ def show_word_list(block_type, word_list, subj_name, dfile, block_number, in_wor
                 # time between_words
                 word_delay = randrange(word_delay_min, word_delay_max)
 
-                screen.blit(fix, fixbox)
-                pygame.display.update(fixbox)
+                #screen.blit(fix, fixbox)
+                #pygame.display.update(fixbox)
                 pygame.time.delay(word_delay)
                 screen.fill(background)
                 pygame.display.flip()
@@ -475,6 +475,8 @@ def show_word_list(block_type, word_list, subj_name, dfile, block_number, in_wor
 
         if (is_question[i]):
             screen.fill(background)
+            screen.blit(fix, fixbox)
+            pygame.display.update(fixbox)
             pygame.display.flip()
             pygame.time.delay(blank_before_question)
 
@@ -536,6 +538,8 @@ def show_word_list(block_type, word_list, subj_name, dfile, block_number, in_wor
 
         blank_time = randrange(blank_time_min, blank_time_max)
         screen.fill(background)
+        screen.blit(fix, fixbox)
+        pygame.display.update(fixbox)
         pygame.display.flip()
         pygame.time.delay(blank_time)
 
