@@ -473,15 +473,25 @@ def main():
     #subj_name = raw_input("Escriba un nombre de archivo y presione ENTER para iniciar: ")
     subj_name = raw_input("Escriba un nombre de archivo: ")
     os.system('cls')
+
+    with open('media/last_protocol_version.txt', 'r') as f:
+        lines = f.readlines()
+        protocol_status, last_selected_protocol = lines[0].split(",")
+    
     print("Ingrese la versión en la que quiere trabajar:")
     print("1. Mágica - Secular - Religiosa")
     print("2. Secular - Religiosa - Mágica")
     print("3. Religiosa - Mágica - Secular")
+    print("")
+    print("La última versión de protocolo lanzada fue la número " + last_selected_protocol + " y " + ("" if (protocol_status == "Finalizado") else "no ") + "se finalizó.")
     version = input("")
     csv_name  = join('data', date_name + '_' + subj_name + '.csv')
     dfile = open(csv_name, 'w')
     dfile.write("ID,BlockName,FirstWord,SecondWord,Character,Rt,Answer,CorrectAnswer,isCorrect\n")
     init()
+
+    with open('media/last_protocol_version.txt', 'w') as f:
+        f.write("Inicializado," + str(version))
 
     slide(slides['welcome1'] , False , K_SPACE)
 
@@ -563,6 +573,10 @@ def main():
         actual_block += 1
 
     dfile.close()
+
+    with open('media/last_protocol_version.txt', 'w') as f:
+        f.write("Finalizado," + str(version))
+    
     pygame.time.delay(blank_time_max)
     slide(slides['farewell'], True , K_SPACE)
     ends()
