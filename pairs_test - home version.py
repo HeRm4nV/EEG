@@ -78,8 +78,6 @@ shuffle(magic_words_I)
 shuffle(secular_words_C)
 shuffle(secular_words_I)
 
-block_names_list = ["religious_congruent", "religious_incongruent", "magic_congruent", "magic_incongruent", "secular_congruent", "secular_incongruent"]
-
 # This return the names dictionary from pygame
 f=open("media/pygame_local_data.txt", "r")
 pygame_dict_names = {}
@@ -472,7 +470,14 @@ def main():
     if not os.path.exists('data/'):
         os.makedirs('data/')
 
-    subj_name = raw_input("Escriba un nombre de archivo y presione ENTER para iniciar: ")
+    #subj_name = raw_input("Escriba un nombre de archivo y presione ENTER para iniciar: ")
+    subj_name = raw_input("Escriba un nombre de archivo: ")
+    os.system('cls')
+    print("Ingrese la versión en la que quiere trabajar:")
+    print("1. Mágica - Secular - Religiosa")
+    print("2. Secular - Religiosa - Mágica")
+    print("3. Religiosa - Mágica - Secular")
+    version = input("")
     csv_name  = join('data', date_name + '_' + subj_name + '.csv')
     dfile = open(csv_name, 'w')
     dfile.write("ID,BlockName,FirstWord,SecondWord,Character,Rt,Answer,CorrectAnswer,isCorrect\n")
@@ -480,14 +485,23 @@ def main():
 
     slide(slides['welcome1'] , False , K_SPACE)
 
+    #modificación version contrabalanceo
+    if version == 1:
+        intructions_list = ["intructions_magic", "intructions_secular", "intructions_religious"]
+        block_names_list = ["magic_congruent", "magic_incongruent", "secular_congruent", "secular_incongruent", "religious_congruent", "religious_incongruent"]
+        words_list = [magic_words_C, magic_words_I, secular_words_C, secular_words_I, religion_words_C, religion_words_I]
+    elif version == 2:
+        intructions_list = ["intructions_secular", "intructions_religious", "intructions_magic"]
+        block_names_list = ["secular_congruent", "secular_incongruent", "religious_congruent", "religious_incongruent", "magic_congruent", "magic_incongruent"]
+        words_list = [secular_words_C, secular_words_I, religion_words_C, religion_words_I, magic_words_C, magic_words_I]
+    elif version == 3:
+        intructions_list = ["intructions_religious", "intructions_magic", "intructions_secular"]
+        block_names_list = ["religious_congruent", "religious_incongruent", "magic_congruent", "magic_incongruent", "secular_congruent", "secular_incongruent"]
+        words_list = [religion_words_C, religion_words_I, magic_words_C, magic_words_I, secular_words_C, secular_words_I]
+
     actual_block = 1
-
-    words_list = [religion_words_C, religion_words_I, magic_words_C, magic_words_I, secular_words_C, secular_words_I]
-
     blocks = len(words_list) / 2
-
-    intructions_list = ["intructions_religious", "intructions_magic", "intructions_secular"]
-
+    
     for i in range (blocks):
 
         slide(slides[intructions_list[i]] , False , K_SPACE)
