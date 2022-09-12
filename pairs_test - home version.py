@@ -17,6 +17,18 @@ import math, string
 from collections import deque
 import unicodedata
 
+class color:
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+
 ## Configurations:
 FullScreenShow = True # Pantalla completa autom�ticamente al iniciar el experimento
 keys = [pygame.K_SPACE] # Teclas elegidas para mano derecha o izquierda
@@ -479,7 +491,7 @@ def main():
         lines = f.readlines()
         protocol_status, last_selected_protocol = lines[0].split(",")
 
-    print("La última versión de protocolo lanzada fue la número " + last_selected_protocol + " y " + ("" if (protocol_status == "Finalizado") else "no ") + "se finalizó.")
+    print("La última versión de protocolo lanzada fue la " + ( (color.BOLD + color.UNDERLINE + "número " + last_selected_protocol + color.END + " y se finalizó correctamente.") if (protocol_status == "Finalizado") else (color.RED + "número " + last_selected_protocol + " y no se finalizó." + color.END) ))
     print("")
     print("Ingrese la versión en la que quiere trabajar:")
     print("1. Mágica - Secular - Religiosa")
