@@ -17,6 +17,18 @@ import math, string
 from collections import deque
 import unicodedata
 
+class color:
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+
 ## Configurations:
 FullScreenShow = True # Pantalla completa autom�ticamente al iniciar el experimento
 keys = [pygame.K_SPACE] # Teclas elegidas para mano derecha o izquierda
@@ -118,8 +130,6 @@ shuffle(magic_words_C)
 shuffle(magic_words_I)
 shuffle(secular_words_C)
 shuffle(secular_words_I)
-
-block_names_list = ["religious_congruent", "religious_incongruent", "magic_congruent", "magic_incongruent", "secular_congruent", "secular_incongruent"]
 
 # This return the names dictionary from pygame
 f=open("media/pygame_local_data.txt", "r")
@@ -567,23 +577,50 @@ def main():
     if not os.path.exists('data/'):
         os.makedirs('data/')
 
-    subj_name = raw_input("Escriba un nombre de archivo y presione ENTER para iniciar: ")
+    subj_name = raw_input("Escriba un nombre de archivo: ")
+    print("")
+    os.system('cls')
+
+    with open('media/last_protocol_version.txt', 'r') as f:
+        lines = f.readlines()
+        protocol_status, last_selected_protocol = lines[0].split(",")
+
+    print("La última versión de protocolo lanzada fue la " + ( (color.BOLD + color.UNDERLINE + "número " + last_selected_protocol + color.END + " y se finalizó correctamente.") if (protocol_status == "Finalizado") else (color.RED + "número " + last_selected_protocol + " y no se finalizó." + color.END) ))
+    print("")
+    print("Ingrese la versión en la que quiere trabajar:")
+    print("1. Mágica - Secular - Religiosa")
+    print("2. Secular - Religiosa - Mágica")
+    print("3. Religiosa - Mágica - Secular")
+    print("")
+    version = input("")
     csv_name  = join('data', date_name + '_' + subj_name + '.csv')
     dfile = open(csv_name, 'w')
     dfile.write("ID,BlockName,FirstWord,SecondWord,Character,Rt,Answer,CorrectAnswer,isCorrect\n")
     init()
 
+    with open('media/last_protocol_version.txt', 'w') as f:
+        f.write("Inicializado," + str(version))
+
     send_trigger(start_trigger, lpt_address, trigger_latency)  # start EEG recording
 
     slide(slides['welcome1'] , False , K_SPACE)
 
+    #modificación version contrabalanceo
+    if version == 1:
+        intructions_list = ["intructions_magic", "intructions_secular", "intructions_religious"]
+        block_names_list = ["magic_congruent", "magic_incongruent", "secular_congruent", "secular_incongruent", "religious_congruent", "religious_incongruent"]
+        words_list = [magic_words_C, magic_words_I, secular_words_C, secular_words_I, religion_words_C, religion_words_I]
+    elif version == 2:
+        intructions_list = ["intructions_secular", "intructions_religious", "intructions_magic"]
+        block_names_list = ["secular_congruent", "secular_incongruent", "religious_congruent", "religious_incongruent", "magic_congruent", "magic_incongruent"]
+        words_list = [secular_words_C, secular_words_I, religion_words_C, religion_words_I, magic_words_C, magic_words_I]
+    elif version == 3:
+        intructions_list = ["intructions_religious", "intructions_magic", "intructions_secular"]
+        block_names_list = ["religious_congruent", "religious_incongruent", "magic_congruent", "magic_incongruent", "secular_congruent", "secular_incongruent"]
+        words_list = [religion_words_C, religion_words_I, magic_words_C, magic_words_I, secular_words_C, secular_words_I]
+
     actual_block = 1
-
-    words_list = [religion_words_C, religion_words_I, magic_words_C, magic_words_I, secular_words_C, secular_words_I]
-
     blocks = len(words_list) / 2
-
-    intructions_list = ["intructions_religious", "intructions_magic", "intructions_secular"]
 
     for i in range (blocks):
 
@@ -656,6 +693,10 @@ def main():
         actual_block += 1
 
     dfile.close()
+
+    with open('media/last_protocol_version.txt', 'w') as f:
+        f.write("Finalizado," + str(version))
+        
     pygame.time.delay(blank_time_max)
     slide(slides['farewell'], True , K_SPACE)
     send_trigger(stop_trigger, lpt_address, trigger_latency)  # stop EEG recording

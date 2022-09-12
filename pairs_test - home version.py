@@ -482,7 +482,6 @@ def main():
     if not os.path.exists('data/'):
         os.makedirs('data/')
 
-    #subj_name = raw_input("Escriba un nombre de archivo y presione ENTER para iniciar: ")
     subj_name = raw_input("Escriba un nombre de archivo: ")
     print("")
     os.system('cls')
